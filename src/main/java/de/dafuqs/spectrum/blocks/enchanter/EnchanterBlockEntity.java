@@ -331,7 +331,7 @@ public class EnchanterBlockEntity extends BlockEntity implements PlayerOwned, Up
 	 */
 	public static boolean isValidCenterEnchantingSetup(EnchanterBlockEntity enchanterBlockEntity) {
 		ItemStack centerStack = enchanterBlockEntity.virtualInventoryIncludingBowlStacks.getStack(0);
-		if(!centerStack.isEmpty() && (centerStack.getItem().isEnchantable(centerStack) || centerStack.isOf(Items.BOOK)) && enchanterBlockEntity.virtualInventoryIncludingBowlStacks.getStack(1).getItem() instanceof ExperienceStorageItem) {
+		if(!centerStack.isEmpty() && (centerStack.getItem().isEnchantable(centerStack) || centerStack.isOf(Items.BOOK)) || centerStack.getItem() instanceof EnchanterEnchantable && enchanterBlockEntity.virtualInventoryIncludingBowlStacks.getStack(1).getItem() instanceof ExperienceStorageItem) {
 			boolean enchantedBookWithAdditionalEnchantmentsFound = false;
 			Map<Enchantment, Integer> existingEnchantments = EnchantmentHelper.get(centerStack);
 			for(int i = 0; i < 8; i++) {
@@ -341,7 +341,7 @@ public class EnchanterBlockEntity extends BlockEntity implements PlayerOwned, Up
 				} else if(virtualSlotStack.getItem() instanceof EnchantedBookItem) {
 					Map<Enchantment, Integer> currentEnchantedBookEnchantments = EnchantmentHelper.get(virtualSlotStack);
 					for(Enchantment enchantment : currentEnchantedBookEnchantments.keySet()) {
-						if((centerStack.isOf(Items.BOOK) || enchantment.isAcceptableItem(centerStack)) && (!existingEnchantments.containsKey(enchantment) || existingEnchantments.get(enchantment) < currentEnchantedBookEnchantments.get(enchantment))) {
+						if((centerStack.isOf(Items.BOOK) || (centerStack.getItem() instanceof EnchanterEnchantable enchanterEnchantable && enchanterEnchantable.canAcceptEnchantment(enchantment)) || enchantment.isAcceptableItem(centerStack)) && (!existingEnchantments.containsKey(enchantment) || existingEnchantments.get(enchantment) < currentEnchantedBookEnchantments.get(enchantment))) {
 							if(enchanterBlockEntity.canOwnerApplyConflictingEnchantments) {
 								enchantedBookWithAdditionalEnchantmentsFound = true;
 								break;
@@ -363,7 +363,7 @@ public class EnchanterBlockEntity extends BlockEntity implements PlayerOwned, Up
 	public static void playCraftingFinishedEffects(EnchanterBlockEntity enchanterBlockEntity) {
 		enchanterBlockEntity.world.playSound(null, enchanterBlockEntity.pos, SoundEvents.ENTITY_PLAYER_LEVELUP, SoundCategory.BLOCKS, 1.0F, 1.0F);
 		
-		SpectrumS2CPackets.playParticle((ServerWorld) enchanterBlockEntity.world,
+		SpectrumS2CPackets.playParticleWithRandomOffsetAndVelocity((ServerWorld) enchanterBlockEntity.world,
 				new Vec3d(enchanterBlockEntity.pos.getX() + 0.5D, enchanterBlockEntity.pos.getY() + 0.5, enchanterBlockEntity.pos.getZ() + 0.5D),
 				SpectrumParticleTypes.LIME_SPARKLE_RISING, 75, new Vec3d(0.5D, 0.5D, 0.5D),
 				new Vec3d(0.1D, -0.1D, 0.1D));
@@ -436,7 +436,7 @@ public class EnchanterBlockEntity extends BlockEntity implements PlayerOwned, Up
 	public static int getRequiredExperienceToEnchantCenterItem(@NotNull EnchanterBlockEntity enchanterBlockEntity) {
 		boolean valid = false;
 		ItemStack centerStackCopy = enchanterBlockEntity.inventory.getStack(0).copy();
-		if(!centerStackCopy.isEmpty() && (centerStackCopy.getItem().isEnchantable(centerStackCopy) || centerStackCopy.isOf(Items.BOOK))) {
+		if(!centerStackCopy.isEmpty() && (centerStackCopy.getItem().isEnchantable(centerStackCopy) || centerStackCopy.isOf(Items.BOOK) || centerStackCopy.getItem() instanceof EnchanterEnchantable)) {
 			Map<Enchantment, Integer> highestEnchantmentLevels = getHighestEnchantmentsInItemBowls(enchanterBlockEntity);
 			int requiredExperience = 0;
 			for (Enchantment enchantment : highestEnchantmentLevels.keySet()) {
@@ -477,7 +477,7 @@ public class EnchanterBlockEntity extends BlockEntity implements PlayerOwned, Up
 		
 		if(conflicts && !allowEnchantmentConflicts) {
 			return -1;
-		} else if((itemStack.getItem().getEnchantability() > 0 && enchantment.isAcceptableItem(itemStack)) || itemStack.isOf(Items.BOOK)) {
+		} else if((itemStack.getItem().getEnchantability() > 0 && enchantment.isAcceptableItem(itemStack)) || itemStack.isOf(Items.BOOK) || itemStack.getItem() instanceof EnchanterEnchantable) {
 			int enchantability = itemStack.getItem().getEnchantability();
 			if (enchantability > 0) {
 				int rarityCost;

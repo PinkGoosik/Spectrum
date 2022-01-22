@@ -2,9 +2,7 @@ package de.dafuqs.spectrum.particle;
 
 import com.mojang.serialization.Codec;
 import de.dafuqs.spectrum.SpectrumCommon;
-import de.dafuqs.spectrum.particle.effect.ItemTransferParticleEffect;
-import de.dafuqs.spectrum.particle.effect.ParticleSpawnerParticleEffect;
-import de.dafuqs.spectrum.particle.effect.WirelessRedstoneTransmissionParticleEffect;
+import de.dafuqs.spectrum.particle.effect.*;
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.minecraft.particle.DefaultParticleType;
 import net.minecraft.particle.ParticleEffect;
@@ -20,8 +18,11 @@ public class SpectrumParticleTypes {
 
 	public static ParticleType<ParticleSpawnerParticleEffect> PARTICLE_SPAWNER;
 	public static ParticleType<ItemTransferParticleEffect> ITEM_TRANSFER;
+	public static ParticleType<ExperienceTransferParticleEffect> EXPERIENCE_TRANSFER;
 	public static ParticleType<WirelessRedstoneTransmissionParticleEffect> WIRELESS_REDSTONE_TRANSMISSION;
-
+	
+	public static ParticleType<TransphereParticleEffect> TRANSPHERE;
+	
 	public static DefaultParticleType SHOOTING_STAR;
 	public static DefaultParticleType SPARKLESTONE_SPARKLE;
 	public static DefaultParticleType SPARKLESTONE_SPARKLE_SMALL;
@@ -30,6 +31,7 @@ public class SpectrumParticleTypes {
 	public static DefaultParticleType MUD_POP;
 	public static DefaultParticleType LIQUID_CRYSTAL_SPARKLE;
 	public static DefaultParticleType BLUE_BUBBLE_POP;
+	public static DefaultParticleType GREEN_BUBBLE_POP;
 	public static DefaultParticleType SPIRIT_SALLOW;
 	public static DefaultParticleType DECAY_PLACE;
 
@@ -134,16 +136,12 @@ public class SpectrumParticleTypes {
 
 
 	public static void register() {
-		PARTICLE_SPAWNER = register("particle_spawner", ParticleSpawnerParticleEffect.FACTORY, (particleType) -> {
-			return ParticleSpawnerParticleEffect.CODEC;
-		});
-		ITEM_TRANSFER = register("item_transfer", ItemTransferParticleEffect.FACTORY, (particleType) -> {
-			return ItemTransferParticleEffect.CODEC;
-		});
-		WIRELESS_REDSTONE_TRANSMISSION = register("wireless_redstone_transmission", WirelessRedstoneTransmissionParticleEffect.FACTORY, (particleType) -> {
-			return WirelessRedstoneTransmissionParticleEffect.CODEC;
-		});
-
+		PARTICLE_SPAWNER = register("particle_spawner", ParticleSpawnerParticleEffect.FACTORY, (particleType) -> ParticleSpawnerParticleEffect.CODEC);
+		ITEM_TRANSFER = register("item_transfer", ItemTransferParticleEffect.FACTORY, (particleType) -> ItemTransferParticleEffect.CODEC);
+		EXPERIENCE_TRANSFER = register("experience_transfer", ExperienceTransferParticleEffect.FACTORY, (particleType) -> ExperienceTransferParticleEffect.CODEC);
+		WIRELESS_REDSTONE_TRANSMISSION = register("wireless_redstone_transmission", WirelessRedstoneTransmissionParticleEffect.FACTORY, (particleType) -> WirelessRedstoneTransmissionParticleEffect.CODEC);
+		TRANSPHERE = register("transphere", TransphereParticleEffect.FACTORY, (particleType) -> TransphereParticleEffect.CODEC);
+		
 		SHOOTING_STAR = register("shooting_star", true);
 		SPARKLESTONE_SPARKLE = register("sparklestone_sparkle", false);
 		SPARKLESTONE_SPARKLE_SMALL = register("sparklestone_sparkle_small", false);
@@ -152,8 +150,10 @@ public class SpectrumParticleTypes {
 		MUD_POP = register("mud_pop", false);
 		LIQUID_CRYSTAL_SPARKLE = register("liquid_crystal_sparkle", false);
 		BLUE_BUBBLE_POP = register("blue_bubble_pop", false);
+		GREEN_BUBBLE_POP = register("green_bubble_pop", false);
 		SPIRIT_SALLOW = register("spirit_sallow", false);
 		DECAY_PLACE = register("decay_place", false);
+		
 
 		BLACK_FALLING_SPORE_BLOSSOM = register("black_falling_spore_blossom", false);
 		BLUE_FALLING_SPORE_BLOSSOM = register("blue_falling_spore_blossom", false);

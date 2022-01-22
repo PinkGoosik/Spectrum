@@ -35,6 +35,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldAccess;
 import org.jetbrains.annotations.Nullable;
 import vazkii.patchouli.api.IMultiblock;
 import vazkii.patchouli.api.PatchouliAPI;
@@ -73,6 +74,22 @@ public class FusionShrineBlock extends BlockWithEntity {
 	}
 	
 	@Override
+	public void onBroken(WorldAccess world, BlockPos pos, BlockState state) {
+		if(world.isClient()) {
+			clearCurrentlyRenderedMultiBlock((World) world);
+		}
+	}
+	
+	public static void clearCurrentlyRenderedMultiBlock(World world) {
+		if(world.isClient) {
+			IMultiblock currentlyRenderedMultiBlock = PatchouliAPI.get().getCurrentMultiblock();
+			if (currentlyRenderedMultiBlock != null && currentlyRenderedMultiBlock.getID().equals(SpectrumMultiblocks.FUSION_SHRINE_IDENTIFIER)) {
+				PatchouliAPI.get().clearMultiblock();
+			}
+		}
+	}
+	
+	@Override
 	public void onLandedUpon(World world, BlockState state, BlockPos pos, Entity entity, float fallDistance) {
 		if(!world.isClient && entity instanceof ItemEntity itemEntity) {
 			if(itemEntity.getPos().x % 0.5 != 0 && itemEntity.getPos().z % 0.5 != 0) { // do not pick up items that were results of crafting
@@ -95,7 +112,7 @@ public class FusionShrineBlock extends BlockWithEntity {
 				return inputFluidViaBucket(world, pos, itemStack);
 			} else {
 				int previousCount = itemStack.getCount();
-				ItemStack remainingStack = InventoryHelper.addToInventory(itemStack, fusionShrineBlockEntity.getInventory(), null);
+				ItemStack remainingStack = InventoryHelper.smartAddToInventory(itemStack, fusionShrineBlockEntity.getInventory(), null);
 				
 				if (remainingStack.getCount() != previousCount) {
 					fusionShrineBlockEntity.markDirty();
@@ -162,7 +179,11 @@ public class FusionShrineBlock extends BlockWithEntity {
 					if (storedFluid == Fluids.EMPTY && bucketFluid != Fluids.EMPTY) {
 						fusionShrineBlockEntity.setFluid(bucketFluid);
 						if (!player.isCreative()) {
-							player.setStackInHand(hand, new ItemStack(Items.BUCKET));
+							ItemStack handStack = player.getStackInHand(hand);
+							handStack.decrement(1);
+							player.setStackInHand(hand, handStack);
+							
+							player.giveItemStack(Items.BUCKET.getDefaultStack());
 						}
 						
 						soundToPlay = bucketFluid.getBucketFillSound();
@@ -170,7 +191,11 @@ public class FusionShrineBlock extends BlockWithEntity {
 					} else if (storedFluid != Fluids.EMPTY && bucketFluid == Fluids.EMPTY) {
 						fusionShrineBlockEntity.setFluid(Fluids.EMPTY);
 						if (!player.isCreative()) {
-							player.setStackInHand(hand, new ItemStack(storedFluid.getBucketItem()));
+							ItemStack handStack = player.getStackInHand(hand);
+							handStack.decrement(1);
+							player.setStackInHand(hand, handStack);
+							
+							player.giveItemStack(new ItemStack(storedFluid.getBucketItem()));
 						}
 						
 						soundToPlay = storedFluid.getBucketFillSound();
@@ -195,7 +220,7 @@ public class FusionShrineBlock extends BlockWithEntity {
 					} else if (!itemStack.isEmpty() && verifyStructure(world, pos, (ServerPlayerEntity) player)) {
 						fusionShrineBlockEntity.setOwner(player);
 						
-						ItemStack remainingStack = InventoryHelper.addToInventory(itemStack, fusionShrineBlockEntity.getInventory(), null);
+						ItemStack remainingStack = InventoryHelper.smartAddToInventory(itemStack, fusionShrineBlockEntity.getInventory(), null);
 						player.setStackInHand(hand, remainingStack);
 						
 						soundToPlay = Optional.of(SoundEvents.ENTITY_ITEM_PICKUP);

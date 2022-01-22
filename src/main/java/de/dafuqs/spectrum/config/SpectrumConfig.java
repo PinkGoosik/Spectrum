@@ -4,6 +4,7 @@ import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,12 +22,12 @@ if the worldgen has lots of high mountains consider raising the TopazGeodeMinFix
 	public int TopazGeodeMaxBelowTopGenerationHeight = 0;
 	
 	@Comment("Every x chunks there is a chance for a geode to generate, Moonstone geodes do not spawn in the Overworld")
-	public int TopazGeodeChunkChance = 12;
+	public int TopazGeodeChunkChance = 7;
 	public int CitrineGeodeChunkChance = 60;
 	public int MoonstoneGeodeChunkChance = 35;
 	
 	@Comment("The amount of colored tree patches to generate every X chunks")
-	public int ColoredTreePatchChanceChunk = 50;
+	public int ColoredTreePatchChanceChunk = 75;
 
 	@Comment("""
 The chance that an Enderman is holding a special treasure block on spawn
@@ -37,12 +38,12 @@ Better to let players stumble about them organically instead of forcing it.""")
 	public float EndermanHoldingEnderTreasureInEndChance = 0.005F;
 
 	@Comment("Worlds where shooting stars spawn for players. Shooting Stars will only spawn for players with sufficient progress in the mod")
-	public List<String> ShootingStarWorlds = Arrays.asList("minecraft:overworld", "starry_sky:starry_sky");
+	public List<String> ShootingStarWorlds = new ArrayList<>();
 
-	@Comment("Worlds where lightning strikes can spawn Lightning Stones")
-	public List<String> LightningStonesWorlds = Arrays.asList("minecraft:overworld", "starry_sky:starry_sky");
+	@Comment("Worlds where lightning strikes can spawn Storm Stones")
+	public List<String> LightningStonesWorlds = new ArrayList<>();
 
-	@Comment("chance for a lightning strike to spawn a Lightning Stone")
+	@Comment("chance for a lightning strike to spawn a Storm Stone")
 	public float LightningStonesChance = 0.5F;
 
 	@Comment("""
@@ -52,22 +53,33 @@ per night per player that unlocked the required progression.""")
 	public float ShootingStarChance = 0.02F;
 
 	@Comment("The biomes where the biome specific plants are growing")
-	public List<String> MermaidsBrushGenerationBiomes = Arrays.asList("minecraft:ocean", "minecraft:cold_ocean", "minecraft_frozen_ocean", "minecraft:lukewarm_ocean", "minecraft:warm_ocean" ,"minecraft:deep_ocean", "minecraft:deep_cold_ocean", "minecraft:deep_frozen_ocean", "minecraft:deep_warm_ocean", "minecraft:deep_lukewarm_ocean");
-	public List<String> QuitoxicReedsGenerationBiomes = Arrays.asList("minecraft:swamp");
-
+	public List<String> MermaidsBrushGenerationBiomes = new ArrayList<>();
+	public List<String> QuitoxicReedsGenerationBiomes = new ArrayList<>();
+	
+	@Comment("The time in ticks it takes a Pigment Pedestal to autocraft a vanilla crafting table recipe without upgrades")
+	public int VanillaRecipeCraftingTimeTicks = 40;
+	
 	@Comment("""
 How fast decay will be spreading on random tick
 can be used to slow down propagation speed of decay in the worlds
 decay does use very few resources, but if your fear of someone letting decay
 spread free or using higher random tick rates than vanilla you can limit the spreading rate here
+
+Fading and Failing do no real harm to the world. If you turn up these values too high players
+may lack the feedback they need that what they are doing is correct
+
 1.0: every random tick (default)
 0.5: Every second random tick
 0.0: never (forbidden - players would be unable to progress)""")
 	public float FadingDecayTickRate = 1.0F;
 	public float FailingDecayTickRate = 1.0F;
 	public float RuinDecayTickRate = 1.0F;
+	public float TerrorDecayTickRate = 1.0F;
 
-	@Comment("Enable or disable specific enchantments. Resonance and Voiding can not be disabled.")
+	@Comment("""
+Enable or disable specific enchantments. Resonance and Voiding can not be disabled.
+This does only disable the registration of said Enchantments, not all recipes based on them (except for Enchantment Upgrade Recipes)
+""")
 	public boolean AutoSmeltEnchantmentEnabled = true;
 	public boolean ExuberanceEnchantmentEnabled = true;
 	public boolean InventoryInsertionEnchantmentEnabled = true;
@@ -111,7 +123,8 @@ spread free or using higher random tick rates than vanilla you can limit the spr
 	public int GlowVisionGogglesDuration = 240;
 
 	@Override
-	public void validatePostLoad() throws ValidationException {
+	public void validatePostLoad() {
+		if(VanillaRecipeCraftingTimeTicks <= 0) { VanillaRecipeCraftingTimeTicks = 40; }
 		if(FadingDecayTickRate <= 0) { FadingDecayTickRate = 1.0F; }
 		if(FailingDecayTickRate <= 0) { FadingDecayTickRate = 1.0F; }
 		if(RuinDecayTickRate <= 0) { RuinDecayTickRate = 1.0F; }
@@ -123,7 +136,30 @@ spread free or using higher random tick rates than vanilla you can limit the spr
 		if(ExuberanceBonusExperiencePercentPerLevel <= 0) { ExuberanceBonusExperiencePercentPerLevel = 0.2F; }
 		if(ImprovedCriticalExtraDamageMultiplierPerLevel <= 0) { ImprovedCriticalExtraDamageMultiplierPerLevel = 0.5F; }
 		if(FirstStrikeDamagePerLevel <= 0) { FirstStrikeDamagePerLevel = 3.0F; }
+		
+		if(ShootingStarWorlds.isEmpty()) {
+			ShootingStarWorlds.add("minecraft:overworld");
+			ShootingStarWorlds.add("starry_sky:starry_sky");
+		}
+		if(LightningStonesWorlds.isEmpty()) {
+			LightningStonesWorlds.add("minecraft:overworld");
+			LightningStonesWorlds.add("starry_sky:starry_sky");
+		}
+		if(MermaidsBrushGenerationBiomes.isEmpty()) {
+			MermaidsBrushGenerationBiomes.add("minecraft:ocean");
+			MermaidsBrushGenerationBiomes.add("minecraft:cold_ocean");
+			MermaidsBrushGenerationBiomes.add("minecraft:frozen_ocean");
+			MermaidsBrushGenerationBiomes.add("minecraft:lukewarm_ocean");
+			MermaidsBrushGenerationBiomes.add("minecraft:warm_ocean");
+			MermaidsBrushGenerationBiomes.add("minecraft:deep_ocean");
+			MermaidsBrushGenerationBiomes.add("minecraft:deep_cold_ocean");
+			MermaidsBrushGenerationBiomes.add("minecraft:deep_frozen_ocean");
+			MermaidsBrushGenerationBiomes.add("minecraft:deep_warm_ocean");
+			MermaidsBrushGenerationBiomes.add("minecraft:deep_lukewarm_ocean");
+		}
+		if(QuitoxicReedsGenerationBiomes.isEmpty()) {
+			QuitoxicReedsGenerationBiomes.add("minecraft:swamp");
+		}
 	}
-
 
 }

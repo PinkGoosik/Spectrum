@@ -2,6 +2,7 @@ package de.dafuqs.spectrum.items.magic_items;
 
 import de.dafuqs.spectrum.BuildingHelper;
 import de.dafuqs.spectrum.Support;
+import de.dafuqs.spectrum.blocks.enchanter.EnchanterEnchantable;
 import de.dafuqs.spectrum.enums.PedestalRecipeTier;
 import de.dafuqs.spectrum.networking.SpectrumS2CPackets;
 import de.dafuqs.spectrum.particle.SpectrumParticleTypes;
@@ -13,6 +14,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.item.TooltipContext;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -41,7 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class ExchangeStaffItem extends BuildingStaffItem {
+public class ExchangeStaffItem extends BuildingStaffItem implements EnchanterEnchantable {
 	
 	public static final int CREATIVE_RANGE = 5;
 	
@@ -109,7 +112,7 @@ public class ExchangeStaffItem extends BuildingStaffItem {
 						
 						Direction side = context.getSide();
 						Vec3d sourcePos = new Vec3d(context.getHitPos().getX() + side.getOffsetX() * 0.1, context.getHitPos().getY() + side.getOffsetY() * 0.1, context.getHitPos().getZ() + side.getOffsetZ() * 0.1);
-						SpectrumS2CPackets.playParticle(serverWorld, sourcePos, SpectrumParticleTypes.SPARKLESTONE_SPARKLE_SMALL, 15, new Vec3d(0, 0, 0), new Vec3d(0.25, 0.25, 0.25));
+						SpectrumS2CPackets.playParticleWithRandomOffsetAndVelocity(serverWorld, sourcePos, SpectrumParticleTypes.SPARKLESTONE_SPARKLE_SMALL, 15, new Vec3d(0, 0, 0), new Vec3d(0.25, 0.25, 0.25));
 						result = ActionResult.CONSUME;
 					} else {
 						result = ActionResult.SUCCESS;
@@ -148,7 +151,11 @@ public class ExchangeStaffItem extends BuildingStaffItem {
 		return Optional.empty();
 	}
 	
-	private ActionResult exchange(World world, BlockPos pos, @NotNull PlayerEntity player, @NotNull Block targetBlock, ItemStack exchangeStaffItemStack) {
+	public static ActionResult exchange(World world, BlockPos pos, @NotNull PlayerEntity player, @NotNull Block targetBlock, ItemStack exchangeStaffItemStack) {
+		return exchange(world, pos, player, targetBlock, exchangeStaffItemStack, false);
+	}
+	
+	public static ActionResult exchange(World world, BlockPos pos, @NotNull PlayerEntity player, @NotNull Block targetBlock, ItemStack exchangeStaffItemStack, boolean single) {
 		Item exchangedForBlockItem = targetBlock.asItem();
 		BlockState targetBlockState = targetBlock.getDefaultState();
 		BlockState placedBlockState = targetBlockState;
@@ -157,7 +164,7 @@ public class ExchangeStaffItem extends BuildingStaffItem {
 		if(player.isCreative()) {
 			exchangedForBlockItemCount = Integer.MAX_VALUE;
 		} else {
-			Triplet<Block, Item, Integer> exchangeData = BuildingHelper.getBuildingItemCountIncludingSimilars(player, targetBlock);
+			Triplet<Block, Item, Integer> exchangeData = BuildingHelper.getBuildingItemCountInInventoryIncludingSimilars(player, targetBlock);
 			if(targetBlock != exchangeData.getA()) {
 				placedBlockState = exchangeData.getA().getDefaultState();
 			}
@@ -165,8 +172,11 @@ public class ExchangeStaffItem extends BuildingStaffItem {
 			exchangedForBlockItemCount = exchangeData.getC();
 		}
 		
+		if(single) {
+			exchangedForBlockItemCount = Math.min(1, exchangedForBlockItemCount);
+		}
+		
 		if (exchangedForBlockItemCount > 0) {
-			
 			int range = getRange(player);
 			List<BlockPos> targetPositions = BuildingHelper.getConnectedBlocks(world, pos, exchangedForBlockItemCount, range);
 			if (targetPositions.isEmpty()) {
@@ -210,6 +220,16 @@ public class ExchangeStaffItem extends BuildingStaffItem {
 		} else {
 			return ActionResult.FAIL;
 		}
+	}
+	
+	@Override
+	public boolean canAcceptEnchantment(Enchantment enchantment) {
+		return enchantment == Enchantments.FORTUNE || enchantment == Enchantments.SILK_TOUCH;
+	}
+	
+	@Override
+	public int getEnchantability() {
+		return 3;
 	}
 	
 }

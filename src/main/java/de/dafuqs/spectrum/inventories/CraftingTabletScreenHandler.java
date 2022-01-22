@@ -27,7 +27,6 @@ import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
@@ -157,7 +156,7 @@ public class CraftingTabletScreenHandler extends AbstractRecipeScreenHandler<Inv
 			   inventory.setStack(11, ItemStack.EMPTY);
 			}
 			int black = pedestalCraftingRecipe.getGemstonePowderAmount(GemstoneColor.BLACK);
-			if(magenta > 0) {
+			if(black > 0) {
 			   inventory.setStack(12, new ItemStack(SpectrumItems.ONYX_POWDER, black));
 			} else {
 			   inventory.setStack(12, ItemStack.EMPTY);
@@ -276,21 +275,15 @@ public class CraftingTabletScreenHandler extends AbstractRecipeScreenHandler<Inv
 			// gemstone and result slots
 			return ItemStack.EMPTY;
 		} else if (index == 14) {
-			ItemStack handStack = player.getStackInHand(Hand.MAIN_HAND);
-			if(handStack.getItem() instanceof CraftingTabletItem) {
-				Recipe storedRecipe = CraftingTabletItem.getStoredRecipe(world, handStack);
-				if (storedRecipe != null && !(storedRecipe instanceof PedestalCraftingRecipe)) {
-					// crafting result slot
-					this.context.run((world, pos) -> {
-						clickedSlotStack.getItem().onCraft(clickedSlotStack, world, player);
-					});
-					if (!this.insertItem(clickedSlotStack, 10, 46, true)) {
-						return ItemStack.EMPTY;
-					}
-					
-					slot.onQuickTransfer(clickedSlotStack, transferStack);
-				}
+			// crafting result slot
+			this.context.run((world, pos) -> {
+				clickedSlotStack.getItem().onCraft(clickedSlotStack, world, player);
+			});
+			if (!this.insertItem(clickedSlotStack, 10, 46, true)) {
+				return ItemStack.EMPTY;
 			}
+			
+			slot.onQuickTransfer(clickedSlotStack, transferStack);
 		 } else if (!this.insertItem(clickedSlotStack, 0, 9, false)) {
 		 	// player inventory
 			return ItemStack.EMPTY;
@@ -344,4 +337,5 @@ public class CraftingTabletScreenHandler extends AbstractRecipeScreenHandler<Inv
    public Optional<PedestalRecipeTier> getTier() {
 	  return this.highestUnlockedRecipeTier;
    }
+   
 }

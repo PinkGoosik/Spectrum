@@ -1,11 +1,5 @@
 {
 	"values": [
-		"minecraft:air",
-		"minecraft:cave_air",
-		"minecraft:light",
-		"minecraft:nether_portal",
-		"minecraft:tripwire",
-		"#wither_immune",
-		"spectrum:decay_away"
+		"#spectrum:ruin_safe"
 	]
 }

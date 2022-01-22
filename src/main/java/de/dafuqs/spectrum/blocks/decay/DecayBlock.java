@@ -3,7 +3,6 @@ package de.dafuqs.spectrum.blocks.decay;
 import de.dafuqs.spectrum.Support;
 import de.dafuqs.spectrum.registries.SpectrumBlockTags;
 import de.dafuqs.spectrum.registries.SpectrumDamageSources;
-import de.dafuqs.spectrum.sound.SpectrumSoundEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -11,17 +10,11 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -71,36 +64,42 @@ public abstract class DecayBlock extends Block {
 
 	// jump to neighboring blocks
 	public void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
-		float spreadChance = getSpreadChance();
-		if(spreadChance < 1.0F) {
-			if (random.nextFloat() > spreadChance) {
-				return;
-			}
-		}
-
-		Direction randomDirection = Direction.random(random);
-		BlockPos targetBlockPos = pos.offset(randomDirection, 1);
-		BlockState currentBlockState = world.getBlockState(targetBlockPos);
-		BlockEntity blockEntity = world.getBlockEntity(targetBlockPos);
-
-		if(blockEntity == null && !Support.hasBlockTag(currentBlockState, SpectrumBlockTags.DECAY)  // decay doesn't jump to other decay. Maybe: if tier is smaller it should still be converted?
-			&& (whiteListBlockTag == null || Support.hasBlockTag(currentBlockState, whiteListBlockTag))
-			&& (blackListBlockTag == null ||!Support.hasBlockTag(currentBlockState, blackListBlockTag))
-				// bedrock is ok, but not other modded unbreakable blocks
-		&& (currentBlockState.getBlock() == Blocks.BEDROCK || currentBlockState.getBlock().getHardness() > -1.0F && currentBlockState.getBlock().getBlastResistance() < 3600000.0F)) {
-
-			BlockState destinationBlockState = this.getDefaultState();
-			for(Map.Entry<Tag<Block>, BlockState> tagEntry : decayConversions.entrySet()) {
-				if(Support.hasBlockTag(currentBlockState, tagEntry.getKey())) {
-					destinationBlockState = tagEntry.getValue();
-					break;
+		if(canSpread(state)) {
+			float spreadChance = getSpreadChance();
+			if (spreadChance < 1.0F) {
+				if (random.nextFloat() > spreadChance) {
+					return;
 				}
 			}
-
-			world.setBlockState(targetBlockPos, destinationBlockState);
+			
+			Direction randomDirection = Direction.random(random);
+			BlockPos targetBlockPos = pos.offset(randomDirection, 1);
+			BlockState currentBlockState = world.getBlockState(targetBlockPos);
+			BlockEntity blockEntity = world.getBlockEntity(targetBlockPos);
+			
+			if (blockEntity == null && !Support.hasBlockTag(currentBlockState, SpectrumBlockTags.DECAY)  // decay doesn't jump to other decay. Maybe: if tier is smaller it should still be converted?
+					&& (whiteListBlockTag == null || Support.hasBlockTag(currentBlockState, whiteListBlockTag))
+					&& (blackListBlockTag == null || !Support.hasBlockTag(currentBlockState, blackListBlockTag))
+					// bedrock is ok, but not other modded unbreakable blocks
+					&& (currentBlockState.getBlock() == Blocks.BEDROCK || (currentBlockState.getBlock().getHardness() > -1.0F && currentBlockState.getBlock().getBlastResistance() < 3600000.0F))) {
+				
+				BlockState destinationBlockState = getSpreadState(state);
+				for (Map.Entry<Tag<Block>, BlockState> tagEntry : decayConversions.entrySet()) {
+					if (Support.hasBlockTag(currentBlockState, tagEntry.getKey())) {
+						destinationBlockState = tagEntry.getValue();
+						break;
+					}
+				}
+				
+				world.setBlockState(targetBlockPos, destinationBlockState);
+			}
 		}
 	}
 
 	protected abstract float getSpreadChance();
+	
+	protected abstract boolean canSpread(BlockState blockState);
+	
+	protected abstract BlockState getSpreadState(BlockState previousState);
 
 }

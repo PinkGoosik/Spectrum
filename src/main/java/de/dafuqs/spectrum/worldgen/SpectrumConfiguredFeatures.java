@@ -2,10 +2,12 @@ package de.dafuqs.spectrum.worldgen;
 
 import com.google.common.collect.ImmutableList;
 import de.dafuqs.spectrum.SpectrumCommon;
+import de.dafuqs.spectrum.blocks.conditional.MermaidsBrushBlock;
 import de.dafuqs.spectrum.registries.SpectrumBlocks;
 import de.dafuqs.spectrum.worldgen.features.WeightedRandomFeatureConfig;
 import de.dafuqs.spectrum.worldgen.features.WeightedRandomFeaturePatchConfig;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
+import net.fabricmc.fabric.api.biome.v1.BiomeSelectionContext;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -32,6 +34,8 @@ import net.minecraft.world.gen.feature.*;
 import net.minecraft.world.gen.feature.size.TwoLayersFeatureSize;
 import net.minecraft.world.gen.foliage.BlobFoliagePlacer;
 import net.minecraft.world.gen.stateprovider.BlockStateProvider;
+import net.minecraft.world.gen.stateprovider.RandomizedIntBlockStateProvider;
+import net.minecraft.world.gen.stateprovider.SimpleBlockStateProvider;
 import net.minecraft.world.gen.stateprovider.WeightedBlockStateProvider;
 import net.minecraft.world.gen.trunk.StraightTrunkPlacer;
 import org.apache.logging.log4j.Level;
@@ -41,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class SpectrumConfiguredFeatures {
 
@@ -93,32 +98,28 @@ public class SpectrumConfiguredFeatures {
 		
 		registerConfiguredAndPlacedFeature(
 			sparklestoneOreIdentifier,
-			Feature.ORE.configure(new OreFeatureConfig(SPARKLESTONE_ORE_TARGETS, 11)),
-				List.of(
-				HeightRangePlacementModifier.uniform(YOffset.aboveBottom(48), YOffset.belowTop(48)), // min and max height
-				CountPlacementModifier.of(6) // number of veins per chunk
+			Feature.ORE.configure(new OreFeatureConfig(SPARKLESTONE_ORE_TARGETS, 8)), List.of(
+				HeightRangePlacementModifier.uniform(YOffset.aboveBottom(48), YOffset.fixed(128)), // min and max height
+				CountPlacementModifier.of(9) // number of veins per chunk
 		));
 		
 		registerConfiguredAndPlacedFeature(
 			azuriteOreIdentifier,
-			Feature.ORE.configure(new OreFeatureConfig(AZURITE_ORE_TARGETS, 5, 0.5F)),
-				List.of(
+			Feature.ORE.configure(new OreFeatureConfig(AZURITE_ORE_TARGETS, 5, 0.5F)), List.of(
 				HeightRangePlacementModifier.trapezoid(YOffset.getBottom(), YOffset.aboveBottom(32)), // min and max height
-				CountPlacementModifier.of(4) // number of veins per chunk
+				CountPlacementModifier.of(6) // number of veins per chunk
 		));
 		
 		registerConfiguredAndPlacedFeature(
 			scarletOreIdentifier,
-			Feature.ORE.configure(new OreFeatureConfig(OreConfiguredFeatures.BASE_STONE_NETHER, scarletOre, 6)),
-				List.of(
+			Feature.ORE.configure(new OreFeatureConfig(OreConfiguredFeatures.BASE_STONE_NETHER, scarletOre, 6)), List.of(
 				HeightRangePlacementModifier.uniform(YOffset.aboveBottom(10), YOffset.belowTop(64)), // min and max height
 				CountPlacementModifier.of(8) // number of veins per chunk
 		));
 		
 		registerConfiguredAndPlacedFeature(
 			paleturOreIdentifier,
-			Feature.ORE.configure(new OreFeatureConfig(Rules.END_STONE, paleturOre, 4, 0.3F)),
-			List.of(
+			Feature.ORE.configure(new OreFeatureConfig(Rules.END_STONE, paleturOre, 4, 0.3F)), List.of(
 				HeightRangePlacementModifier.uniform(YOffset.getBottom(), YOffset.getTop()), // min and max height
 				CountPlacementModifier.of(6) // number of veins per chunk
 		));
@@ -214,7 +215,19 @@ public class SpectrumConfiguredFeatures {
 			)
 		);
 		
-		BiomeModifications.addFeature(BiomeSelectors.foundInOverworld(), GenerationStep.Feature.VEGETAL_DECORATION, RegistryKey.of(Registry.PLACED_FEATURE_KEY, randomColoredTreesFeatureIdentifier));
+		Predicate<BiomeSelectionContext> treeBiomes = BiomeSelectors.categories(
+				Biome.Category.PLAINS,
+				Biome.Category.EXTREME_HILLS,
+				Biome.Category.JUNGLE,
+				Biome.Category.FOREST,
+				Biome.Category.SWAMP,
+				Biome.Category.MESA,
+				Biome.Category.MOUNTAIN,
+				Biome.Category.DESERT,
+				Biome.Category.ICY,
+				Biome.Category.SAVANNA,
+				Biome.Category.TAIGA);
+		BiomeModifications.addFeature(treeBiomes, GenerationStep.Feature.VEGETAL_DECORATION, RegistryKey.of(Registry.PLACED_FEATURE_KEY, randomColoredTreesFeatureIdentifier));
 	}
 
 	private static void registerGeodes() {
@@ -260,7 +273,7 @@ public class SpectrumConfiguredFeatures {
 				UniformIntProvider.create(4, 6),
 				UniformIntProvider.create(3, 4),
 				UniformIntProvider.create(1, 2),
-				-16, 16, 0.05D, 1)
+				-16, 16, 0.05D, 0)
 		);
 		
 		TOPAZ_GEODE = Feature.GEODE.configure(new GeodeFeatureConfig(
@@ -279,7 +292,7 @@ public class SpectrumConfiguredFeatures {
 				UniformIntProvider.create(4, 6),
 				UniformIntProvider.create(3, 4),
 				UniformIntProvider.create(1, 2),
-				-16, 16, 0.05D, 2)
+				-16, 16, 0.05D, 1)
 		);
 		
 		MOONSTONE_GEODE = Feature.GEODE.configure(new GeodeFeatureConfig(
@@ -331,7 +344,7 @@ public class SpectrumConfiguredFeatures {
 		Identifier mermaidsBrushIdentifier = new Identifier(SpectrumCommon.MOD_ID, "mermaids_brush");
 		registerConfiguredAndPlacedFeature(
 			mermaidsBrushIdentifier,
-			Feature.SIMPLE_BLOCK.configure(new SimpleBlockFeatureConfig(BlockStateProvider.of(SpectrumBlocks.MERMAIDS_BRUSH))),
+				Feature.SIMPLE_BLOCK.configure(new SimpleBlockFeatureConfig(new RandomizedIntBlockStateProvider(SimpleBlockStateProvider.of(SpectrumBlocks.MERMAIDS_BRUSH), MermaidsBrushBlock.AGE, UniformIntProvider.create(5, 6)))),
 			List.of(
 				BiomePlacementModifier.of(),
 				RarityFilterPlacementModifier.of(16),
@@ -382,7 +395,7 @@ public class SpectrumConfiguredFeatures {
 
 		// CLOVER
 		Identifier cloversIdentifier = new Identifier(SpectrumCommon.MOD_ID, "clovers");
-		DataPool cloverBlockDataPool = DataPool.builder().add(SpectrumBlocks.CLOVER.getDefaultState(), 19).add(SpectrumBlocks.FOUR_LEAF_CLOVER.getDefaultState(), 1).build();
+		DataPool cloverBlockDataPool = DataPool.builder().add(SpectrumBlocks.CLOVER.getDefaultState(), 9).add(SpectrumBlocks.FOUR_LEAF_CLOVER.getDefaultState(), 1).build();
 		registerConfiguredAndPlacedFeature(
 				cloversIdentifier,
 				Feature.RANDOM_PATCH.configure(ConfiguredFeatures.createRandomPatchFeatureConfig(Feature.SIMPLE_BLOCK.configure(new SimpleBlockFeatureConfig(new WeightedBlockStateProvider(cloverBlockDataPool))), List.of(Blocks.GRASS_BLOCK), 4)),

@@ -2,6 +2,8 @@ package de.dafuqs.spectrum.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import de.dafuqs.spectrum.SpectrumCommon;
+import de.dafuqs.spectrum.blocks.enchanter.EnchanterEnchantable;
+import de.dafuqs.spectrum.enchantments.SpectrumEnchantment;
 import de.dafuqs.spectrum.enums.GemstoneColor;
 import de.dafuqs.spectrum.enums.PedestalRecipeTier;
 import de.dafuqs.spectrum.interfaces.Cloakable;
@@ -20,6 +22,7 @@ import net.minecraft.advancement.Advancement;
 import net.minecraft.advancement.AdvancementCriterion;
 import net.minecraft.advancement.criterion.CriterionConditions;
 import net.minecraft.block.Block;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.LootPool;
@@ -218,6 +221,25 @@ public class ProgressionSanityCommand {
 			SoundEvent soundEvent = anvilCrushingRecipe.getSoundEvent();
 			if(soundEvent == null) {
 				SpectrumCommon.log(Level.WARN, "[SANITY: Anvil Crushing] Recipe '" + anvilCrushingRecipe.getId() + "' has a nonexistent sound set");
+			}
+		}
+		
+		// Enchantments with nonexistent Advancement cloak
+		for(Map.Entry<RegistryKey<Enchantment>, Enchantment> enchantment : Registry.ENCHANTMENT.getEntries()) {
+			if(enchantment.getValue() instanceof SpectrumEnchantment spectrumEnchantment) {
+				Identifier advancementIdentifier = spectrumEnchantment.getUnlockAdvancementIdentifier();
+				Advancement advancementCriterionAdvancement = SpectrumCommon.minecraftServer.getAdvancementLoader().get(advancementIdentifier);
+				if(advancementCriterionAdvancement == null) {
+					SpectrumCommon.log(Level.WARN, "[SANITY: Enchantments] Enchantment '" + enchantment.getKey().getValue() + "' references advancement '" + advancementIdentifier  + "' that does not exist");
+				}
+			}
+		}
+		
+		// EnchanterEnchantables with enchantability <= 0
+		for(Map.Entry<RegistryKey<Item>, Item> item : Registry.ITEM.getEntries()) {
+			Item i = item.getValue();
+			if(i instanceof EnchanterEnchantable && i.getEnchantability() < 1) {
+				SpectrumCommon.log(Level.WARN, "[SANITY: Enchantability] Item '" + item.getKey().getValue() + "' is EnchanterEnchantable, but has enchantability of < 1");
 			}
 		}
 		

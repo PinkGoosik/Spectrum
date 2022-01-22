@@ -1,0 +1,20 @@
+{
+  "parent": "spectrum:lategame/craft_ominous_sapling",
+  "display": {
+    "icon": {
+        "item": "minecraft:dead_bush"
+    },
+    "hidden": true,
+    "title": {
+      "translate": "advancements.spectrum.grow_ominous_sapling.title"
+    },
+    "description": {
+      "translate": "advancements.spectrum.grow_ominous_sapling.description"
+    }
+  },
+  "criteria": {
+    "grow": {
+      "trigger":"minecraft:impossible"
+    }
+  }
+}

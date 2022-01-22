@@ -16,6 +16,7 @@ import de.dafuqs.spectrum.blocks.item_bowl.ItemBowlBlockEntityRenderer;
 import de.dafuqs.spectrum.blocks.mob_head.SpectrumSkullBlockEntity;
 import de.dafuqs.spectrum.blocks.mob_head.SpectrumSkullBlockEntityRenderer;
 import de.dafuqs.spectrum.blocks.particle_spawner.ParticleSpawnerBlockEntity;
+import de.dafuqs.spectrum.blocks.pastel_network.nodes.*;
 import de.dafuqs.spectrum.blocks.pedestal.PedestalBlockEntity;
 import de.dafuqs.spectrum.blocks.pedestal.PedestalBlockEntityRenderer;
 import de.dafuqs.spectrum.blocks.redstone.BlockPlacerBlockEntity;
@@ -63,8 +64,13 @@ public class SpectrumBlockEntityRegistry<T extends BlockEntity> {
 	public static BlockEntityType<RedstoneCalculatorBlockEntity> REDSTONE_CALCULATOR;
 	public static BlockEntityType<RedstoneWirelessBlockEntity> REDSTONE_WIRELESS;
 	public static BlockEntityType<BlockPlacerBlockEntity> BLOCK_PLACER;
-
 	public static BlockEntityType<BlockFlooderBlockEntity> BLOCK_FLOODER;
+	
+	public static BlockEntityType<PastelNetworkConnectionNode> CONNECTION_NODE;
+	public static BlockEntityType<PastelNetworkProviderNode> PROVIDER_NODE;
+	public static BlockEntityType<PastelNetworkStorageNode> STORAGE_NODE;
+	public static BlockEntityType<PastelNetworkPusherNode> PUSHER_NODE;
+	public static BlockEntityType<PastelNetworkPullerNode> PULLER_NODE;
 
 	public static void register() {
 		OMINOUS_SAPLING = Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(SpectrumCommon.MOD_ID, "ominous_sapling_block_entity"), FabricBlockEntityTypeBuilder.create(OminousSaplingBlockEntity::new, SpectrumBlocks.OMINOUS_SAPLING).build());
@@ -85,7 +91,14 @@ public class SpectrumBlockEntityRegistry<T extends BlockEntity> {
 		REDSTONE_WIRELESS = Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(SpectrumCommon.MOD_ID, "redstone_wireless"), FabricBlockEntityTypeBuilder.create(RedstoneWirelessBlockEntity::new, SpectrumBlocks.REDSTONE_WIRELESS).build());
 		BLOCK_PLACER = Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(SpectrumCommon.MOD_ID, "block_placer"), FabricBlockEntityTypeBuilder.create(BlockPlacerBlockEntity::new, SpectrumBlocks.BLOCK_PLACER).build());
 		BLOCK_FLOODER = Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(SpectrumCommon.MOD_ID, "block_flooder"), FabricBlockEntityTypeBuilder.create(BlockFlooderBlockEntity::new, SpectrumBlocks.BLOCK_FLOODER).build());
-
+		
+		// All the pastel network nodes
+		CONNECTION_NODE = Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(SpectrumCommon.MOD_ID, "connection_node"), FabricBlockEntityTypeBuilder.create(PastelNetworkConnectionNode::new, SpectrumBlocks.CONNECTION_NODE).build());
+		PROVIDER_NODE = Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(SpectrumCommon.MOD_ID, "provider_node"), FabricBlockEntityTypeBuilder.create(PastelNetworkProviderNode::new, SpectrumBlocks.PROVIDER_NODE).build());
+		STORAGE_NODE = Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(SpectrumCommon.MOD_ID, "storage_node"), FabricBlockEntityTypeBuilder.create(PastelNetworkStorageNode::new, SpectrumBlocks.STORAGE_NODE).build());
+		PUSHER_NODE = Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(SpectrumCommon.MOD_ID, "pusher_node"), FabricBlockEntityTypeBuilder.create(PastelNetworkPusherNode::new, SpectrumBlocks.PUSHER_NODE).build());
+		PULLER_NODE = Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(SpectrumCommon.MOD_ID, "puller_node"), FabricBlockEntityTypeBuilder.create(PastelNetworkPullerNode::new, SpectrumBlocks.PULLER_NODE).build());
+		
 		// All the upgrades
 		List<Block> upgradeBlocksList = UpgradeBlock.getRegisteredUpgradeBlocks();
 		Block[] upgradeBlocksArray = new Block[upgradeBlocksList.size()];

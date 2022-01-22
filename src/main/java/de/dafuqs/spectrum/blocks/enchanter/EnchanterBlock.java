@@ -24,6 +24,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldAccess;
 import org.jetbrains.annotations.Nullable;
 import vazkii.patchouli.api.IMultiblock;
 import vazkii.patchouli.api.PatchouliAPI;
@@ -61,6 +62,22 @@ public class EnchanterBlock extends BlockWithEntity {
 	}
 	
 	@Override
+	public void onBroken(WorldAccess world, BlockPos pos, BlockState state) {
+		if(world.isClient()) {
+			clearCurrentlyRenderedMultiBlock((World) world);
+		}
+	}
+	
+	public static void clearCurrentlyRenderedMultiBlock(World world) {
+		if(world.isClient) {
+			IMultiblock currentlyRenderedMultiBlock = PatchouliAPI.get().getCurrentMultiblock();
+			if (currentlyRenderedMultiBlock != null && currentlyRenderedMultiBlock.getID().equals(SpectrumMultiblocks.ENCHANTER_IDENTIFIER)) {
+				PatchouliAPI.get().clearMultiblock();
+			}
+		}
+	}
+	
+	@Override
 	public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
 		scatterContents(world, pos);
 		super.onStateReplaced(state, world, pos, newState, moved);
@@ -81,7 +98,7 @@ public class EnchanterBlock extends BlockWithEntity {
 					boolean itemsChanged = false;
 					Inventory inventory = enchanterBlockEntity.getInventory();
 					
-					int inputInventorySlotIndex = handStack.getItem() instanceof ExperienceStorageItem ? 1 : 0;
+					int inputInventorySlotIndex = handStack.getItem() instanceof ExperienceStorageItem ? inventory.getStack(1).isEmpty() ? 1 : 0 : 0;
 					if (player.isSneaking() || handStack.isEmpty()) {
 						// sneaking or empty hand: remove items
 						for (int i = 0; i < EnchanterBlockEntity.INVENTORY_SIZE; i++) {

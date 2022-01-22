@@ -2,8 +2,10 @@ package de.dafuqs.spectrum.blocks.conditional;
 
 import de.dafuqs.spectrum.SpectrumCommon;
 import de.dafuqs.spectrum.interfaces.Cloakable;
-import de.dafuqs.spectrum.particle.SpectrumParticleTypes;
-import de.dafuqs.spectrum.registries.*;
+import de.dafuqs.spectrum.registries.SpectrumBlockTags;
+import de.dafuqs.spectrum.registries.SpectrumFluidTags;
+import de.dafuqs.spectrum.registries.SpectrumFluids;
+import de.dafuqs.spectrum.registries.SpectrumItems;
 import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EquipmentSlot;
@@ -134,7 +136,7 @@ public class MermaidsBrushBlock extends PlantBlock implements Cloakable, FluidFi
 			world.spawnEntity(pearlEntity);
 			world.setBlockState(pos, state.with(AGE, 0), 3);
 		} else {
-			float chance = state.get(IN_LIQUID_CRYSTAL) ? 0.2F : 0.1F;
+			float chance = state.get(IN_LIQUID_CRYSTAL) ? 1.0F : 0.5F;
 			if(random.nextFloat() < chance) {
 				world.setBlockState(pos, state.with(AGE, age + 1), 3);
 			}

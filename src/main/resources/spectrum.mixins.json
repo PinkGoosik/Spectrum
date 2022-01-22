@@ -36,7 +36,7 @@
     "RecipeManagerMixin",
     "RedstoneOreMixin",
     "ServerPlayerEntityMixin",
-    "ServerWorldMixin",
+    "SpectrumServerWorldMixin",
     "SpawnerBlockMixin",
     "WorldRendererMixin"
   ],
@@ -54,7 +54,6 @@
     "client.MixinClientAdvancementManager",
     "client.MixinMinecraftClient",
     "client.RenderLayerAccessor",
-    "client.ScreenMixin",
     "client.TransparentBlockMixin",
     "client.WorldRendererMixin"
   ],

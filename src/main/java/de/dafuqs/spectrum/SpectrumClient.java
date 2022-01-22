@@ -10,10 +10,7 @@ import de.dafuqs.spectrum.networking.SpectrumS2CPackets;
 import de.dafuqs.spectrum.particle.SpectrumParticleFactories;
 import de.dafuqs.spectrum.progression.ToggleableBlockColorProvider;
 import de.dafuqs.spectrum.progression.ToggleableItemColorProvider;
-import de.dafuqs.spectrum.registries.SpectrumBlockEntityRegistry;
-import de.dafuqs.spectrum.registries.SpectrumBlocks;
-import de.dafuqs.spectrum.registries.SpectrumFluids;
-import de.dafuqs.spectrum.registries.SpectrumItems;
+import de.dafuqs.spectrum.registries.*;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -76,6 +73,8 @@ public class SpectrumClient implements ClientModInitializer {
 
 		log(Level.INFO, "Registering Overlays...");
 		GuiOverlay.register();
+		
+		SpectrumTooltipComponents.registerTooltipComponents();
 
 		ClientLifecycleEvents.CLIENT_STARTED.register(minecraftClient -> {
 			SpectrumClient.minecraftClient = minecraftClient;
@@ -113,10 +112,12 @@ public class SpectrumClient implements ClientModInitializer {
 		if(grassBlockColorProvider != null && grassItemColorProvider != null) {
 			ColorProviderRegistry.BLOCK.register(grassBlockColorProvider, SpectrumBlocks.CLOVER);
 			ColorProviderRegistry.BLOCK.register(grassBlockColorProvider, SpectrumBlocks.FOUR_LEAF_CLOVER);
-			ColorProviderRegistry.ITEM.register(grassItemColorProvider, SpectrumBlocks.CLOVER);
-			ColorProviderRegistry.ITEM.register(grassItemColorProvider, SpectrumBlocks.FOUR_LEAF_CLOVER);
+			//ColorProviderRegistry.ITEM.register(grassItemColorProvider, SpectrumBlocks.CLOVER);
+			//ColorProviderRegistry.ITEM.register(grassItemColorProvider, SpectrumBlocks.FOUR_LEAF_CLOVER);
 		}
 	}
+	
+
 
 	// Vanilla models see: ModelPredicateProviderRegistry
 	public static void registerBowPredicates(BowItem bowItem) {

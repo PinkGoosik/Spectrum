@@ -2,14 +2,20 @@ package de.dafuqs.spectrum.items.magic_items;
 
 import de.dafuqs.spectrum.SpectrumClient;
 import de.dafuqs.spectrum.Support;
+import de.dafuqs.spectrum.blocks.enchanter.EnchanterEnchantable;
 import de.dafuqs.spectrum.interfaces.PlayerOwned;
+import de.dafuqs.spectrum.registries.SpectrumEnchantments;
 import de.dafuqs.spectrum.sound.EnderSpliceChargingSoundInstance;
 import de.dafuqs.spectrum.sound.SpectrumSoundEvents;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.dimension.v1.FabricDimensions;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.item.TooltipContext;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -18,6 +24,7 @@ import net.minecraft.item.ItemUsage;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.PlaySoundIdS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
@@ -29,6 +36,7 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,7 +45,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class EnderSpliceItem extends Item {
+public class EnderSpliceItem extends Item implements EnchanterEnchantable {
 	
 	public EnderSpliceItem(Settings settings) {
 		super(settings);
@@ -55,17 +63,19 @@ public class EnderSpliceItem extends Item {
 				Criteria.CONSUME_ITEM.trigger((ServerPlayerEntity) playerEntity, itemStack);
 			}
 			
+			boolean resonance = EnchantmentHelper.getLevel(SpectrumEnchantments.RESONANCE, itemStack) > 0;
+			
 			// If Dimension & Pos stored => Teleport to that position
 			Optional<Pair<String, Vec3d>> teleportTargetPos = getTeleportTargetPos(itemStack);
 			if (teleportTargetPos.isPresent()) {
 				RegistryKey<World> targetWorldKey = RegistryKey.of(Registry.WORLD_KEY, new Identifier(teleportTargetPos.get().getLeft()));
 				World targetWorld = world.getServer().getWorld(targetWorldKey);
-				teleportPlayerToPos(world, user, playerEntity, targetWorld, teleportTargetPos.get().getRight());
+				teleportPlayerToPos(world, user, playerEntity, targetWorld, teleportTargetPos.get().getRight(), resonance);
 			} else {
 				// If UUID stored => Teleport to player, if online
 				Optional<UUID> teleportTargetPlayerUUID = getTeleportTargetPlayerUUID(itemStack);
 				if (teleportTargetPlayerUUID.isPresent()) {
-					teleportPlayerToPlayerWithUUID(world, user, playerEntity, teleportTargetPlayerUUID.get());
+					teleportPlayerToPlayerWithUUID(world, user, playerEntity, teleportTargetPlayerUUID.get(), resonance);
 				} else {
 					// Nothing stored => Store current position
 					setTeleportTargetPos(itemStack, playerEntity.getEntityWorld(), playerEntity.getPos());
@@ -75,7 +85,12 @@ public class EnderSpliceItem extends Item {
 			
 			playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
 			if (!playerEntity.getAbilities().creativeMode) {
-				itemStack.decrement(1);
+				int unbreakingLevel = EnchantmentHelper.getLevel(Enchantments.UNBREAKING, itemStack);
+				if(unbreakingLevel == 0) {
+					itemStack.decrement(1);
+				} else {
+					itemStack.decrement(Support.getIntFromDecimalWithChance(1.0 / (1+unbreakingLevel), world.random));
+				}
 			}
 		}
 		
@@ -92,19 +107,24 @@ public class EnderSpliceItem extends Item {
 		}
 	}
 	
-	private void teleportPlayerToPlayerWithUUID(World world, LivingEntity user, PlayerEntity playerEntity, UUID targetPlayerUUID) {
+	private void teleportPlayerToPlayerWithUUID(World world, LivingEntity user, PlayerEntity playerEntity, UUID targetPlayerUUID, boolean hasResonance) {
 		PlayerEntity targetPlayer = PlayerOwned.getPlayerEntityIfOnline(world, targetPlayerUUID);
 		if(targetPlayer != null) {
-			teleportPlayerToPos(targetPlayer.getEntityWorld(), user, playerEntity, targetPlayer.getEntityWorld(), targetPlayer.getPos());
+			teleportPlayerToPos(targetPlayer.getEntityWorld(), user, playerEntity, targetPlayer.getEntityWorld(), targetPlayer.getPos(), hasResonance);
 		}
 	}
 	
-	private void teleportPlayerToPos(World world, LivingEntity user, PlayerEntity playerEntity, World targetWorld, Vec3d targetPos) {
-		if (user.getEntityWorld().getRegistryKey().getValue().toString().equals(targetWorld.getRegistryKey().getValue().toString())) {
+	private void teleportPlayerToPos(World world, LivingEntity user, PlayerEntity playerEntity, World targetWorld, Vec3d targetPos, boolean hasResonance) {
+		boolean isSameWorld = isSameWorld(user.getEntityWorld(), targetWorld);
+		if (hasResonance || isSameWorld) {
 			Vec3d currentPos = playerEntity.getPos();
 			world.playSound(playerEntity, currentPos.getX(), currentPos.getY(), currentPos.getZ(), SpectrumSoundEvents.PLAYER_TELEPORTS, SoundCategory.PLAYERS, 1.0F, 1.0F);
 			
-			user.requestTeleport(targetPos.getX(), targetPos.y + 0.25, targetPos.z); // +0.25 makes it look way more lively
+			if(!isSameWorld) {
+				FabricDimensions.teleport(user, (ServerWorld) targetWorld, new TeleportTarget(targetPos.add(0, 0.25, 0), new Vec3d(0, 0, 0), user.getYaw(), user.getPitch()));
+			} else {
+				user.requestTeleport(targetPos.getX(), targetPos.y + 0.25, targetPos.z); // +0.25 makes it look way more lively
+			}
 			world.playSound(playerEntity, targetPos.getX(), targetPos.y, targetPos.z, SpectrumSoundEvents.PLAYER_TELEPORTS, SoundCategory.PLAYERS, 1.0F, 1.0F);
 			
 			// make sure the sound plays even when the player currently teleports
@@ -114,6 +134,11 @@ public class EnderSpliceItem extends Item {
 			}
 		}
 	}
+	
+	public static boolean isSameWorld(World world1, World world2) {
+		return world1.getRegistryKey().getValue().toString().equals(world2.getRegistryKey().getValue().toString());
+	}
+	
 	
 	@Override
 	public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
@@ -235,6 +260,16 @@ public class EnderSpliceItem extends Item {
 			return Optional.of(nbtCompound.getString("TargetPlayerName"));
 		}
 		return Optional.empty();
+	}
+	
+	@Override
+	public boolean canAcceptEnchantment(Enchantment enchantment) {
+		return enchantment == SpectrumEnchantments.RESONANCE || enchantment == Enchantments.UNBREAKING;
+	}
+	
+	@Override
+	public int getEnchantability() {
+		return 50;
 	}
 
 }

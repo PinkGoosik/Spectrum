@@ -13,8 +13,6 @@ import de.dafuqs.spectrum.items.item_frame.InvisibleGlowItemFrameItem;
 import de.dafuqs.spectrum.items.item_frame.InvisibleItemFrameItem;
 import de.dafuqs.spectrum.items.magic_items.*;
 import de.dafuqs.spectrum.items.tools.*;
-import de.dafuqs.spectrum.registries.materials.SpectrumArmorMaterials;
-import de.dafuqs.spectrum.registries.materials.SpectrumToolMaterials;
 import de.dafuqs.spectrum.sound.SpectrumSoundEvents;
 import io.wispforest.owo.itemgroup.OwoItemSettings;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
@@ -41,6 +39,7 @@ public class SpectrumItems {
 	public static FabricItemSettings generalUncommonItemSettingsSixteen = new OwoItemSettings().group(SpectrumItemGroups.ITEM_GROUP_GENERAL).tab(1).rarity(Rarity.UNCOMMON).maxCount(16);
 	public static FabricItemSettings generalRareItemSettings = new OwoItemSettings().group(SpectrumItemGroups.ITEM_GROUP_GENERAL).tab(1).rarity(Rarity.RARE).maxCount(64);
 	public static FabricItemSettings generalRareItemSettingsSingle = new OwoItemSettings().group(SpectrumItemGroups.ITEM_GROUP_GENERAL).tab(1).rarity(Rarity.RARE).maxCount(1);
+	public static FabricItemSettings generalEpicItemSettingsSingle = new OwoItemSettings().group(SpectrumItemGroups.ITEM_GROUP_GENERAL).tab(1).rarity(Rarity.EPIC).maxCount(1);
 	public static FabricItemSettings decayPlacerItemSettings = new OwoItemSettings().group(SpectrumItemGroups.ITEM_GROUP_GENERAL).tab(1).maxCount(16);
 	public static FabricItemSettings spectrumLowNightVisionArmorItemSettings = new OwoItemSettings().group(SpectrumItemGroups.ITEM_GROUP_GENERAL).tab(1).rarity(Rarity.UNCOMMON).maxDamage(SpectrumArmorMaterials.GLOW_VISION.getDurability(EquipmentSlot.HEAD));
 
@@ -150,6 +149,7 @@ public class SpectrumItems {
 	public static final Item BOTTLE_OF_FADING = new DecayPlacerItem(SpectrumBlocks.FADING, decayPlacerItemSettings);
 	public static final Item BOTTLE_OF_FAILING = new DecayPlacerItem(SpectrumBlocks.FAILING, decayPlacerItemSettings);
 	public static final Item BOTTLE_OF_RUIN = new DecayPlacerItem(SpectrumBlocks.RUIN, decayPlacerItemSettings);
+	public static final Item BOTTLE_OF_TERROR = new DecayPlacerItem(SpectrumBlocks.TERROR, decayPlacerItemSettings);
 	public static final Item BOTTLE_OF_DECAY_AWAY = new DecayPlacerItem(SpectrumBlocks.DECAY_AWAY, decayPlacerItemSettings);
 
 	// Resources
@@ -162,9 +162,10 @@ public class SpectrumItems {
 	public static final CloakedGravityItem PALETUR_GEM = new CloakedGravityItem(resourcesItemSettingsSixteen, 0.98F, ((Cloakable) SpectrumBlocks.PALETUR_ORE).getCloakAdvancementIdentifier(), Items.CYAN_DYE);
 
 	public static final CloakedItem QUITOXIC_POWDER = new CloakedItem(resourcesItemSettings, ((Cloakable) SpectrumBlocks.QUITOXIC_REEDS).getCloakAdvancementIdentifier(), Items.PURPLE_DYE);
-	public static final CloakedItem LIGHTNING_STONE = new CloakedItem(resourcesItemSettingsSixteen, ((Cloakable) SpectrumBlocks.SPARKLESTONE_ORE).getCloakAdvancementIdentifier(), Items.YELLOW_DYE);
+	public static final CloakedItem LIGHTNING_STONE = new CloakedItem(resourcesItemSettingsSixteen, ((Cloakable) SpectrumBlocks.STUCK_LIGHTNING_STONE).getCloakAdvancementIdentifier(), Items.YELLOW_DYE);
 	public static final CloakedItem MERMAIDS_GEM = new CloakedItem(resourcesItemSettingsSixteen, new Identifier(SpectrumCommon.MOD_ID, "craft_using_pedestal"), Items.LIGHT_BLUE_DYE);
 	public static final CloakedItem SHOOTING_STAR = new CloakedItem(resourcesItemSettingsSixteen, new Identifier(SpectrumCommon.MOD_ID, "milestones/unlock_shooting_stars"), Items.PURPLE_DYE);
+	public static final CloakedItem STARDUST = new CloakedItem(resourcesItemSettingsSixteen, new Identifier(SpectrumCommon.MOD_ID, "milestones/unlock_shooting_stars"), Items.PURPLE_DYE);
 
 	// Magical Tools
 	public static final Item ENDER_BAG = new EnderBagItem(generalItemSettingsSingle);
@@ -192,7 +193,7 @@ public class SpectrumItems {
 	// Misc
 	public static final Item MUSIC_DISC_SPECTRUM_THEME = new SpectrumMusicDiscItem(1, SpectrumSoundEvents.SPECTRUM_THEME, generalRareItemSettingsSingle);
 	public static final Item MUSIC_DISC_DIMENSION_THEME = new SpectrumMusicDiscItem(2, SpectrumSoundEvents.BOSS_THEME, generalRareItemSettingsSingle);
-	public static final Item SPAWNER = new SpawnerItem(Blocks.SPAWNER, generalRareItemSettingsSingle);
+	public static final Item SPAWNER = new SpawnerItem(Blocks.SPAWNER, generalEpicItemSettingsSingle);
 	public static final Item GLISTERING_MELON_SEEDS = new AliasedBlockItem(SpectrumBlocks.GLISTERING_MELON_STEM, generalItemSettings);
 	public static final Item INVISIBLE_ITEM_FRAME = new InvisibleItemFrameItem(SpectrumEntityTypes.INVISIBLE_ITEM_FRAME, generalItemSettings);
 	public static final Item INVISIBLE_GLOW_ITEM_FRAME = new InvisibleGlowItemFrameItem(SpectrumEntityTypes.INVISIBLE_GLOW_ITEM_FRAME, generalItemSettings);
@@ -294,6 +295,7 @@ public class SpectrumItems {
 		register("mermaids_gem", MERMAIDS_GEM);
 		register("lightning_stone", LIGHTNING_STONE);
 		register("shooting_star", SHOOTING_STAR);
+		register("stardust", STARDUST);
 
 		register("vegetal", VEGETAL);
 		register("neolith", CORRUPTED_OBSIDIAN_DUST);
@@ -305,6 +307,7 @@ public class SpectrumItems {
 		register("bottle_of_fading", BOTTLE_OF_FADING);
 		register("bottle_of_failing", BOTTLE_OF_FAILING);
 		register("bottle_of_ruin", BOTTLE_OF_RUIN);
+		register("bottle_of_terror", BOTTLE_OF_TERROR);
 		register("bottle_of_decay_away", BOTTLE_OF_DECAY_AWAY);
 	}
 	

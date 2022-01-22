@@ -3,7 +3,7 @@
     "icon": "spectrum:enchanter",
     "priority": true,
     "sortnum": 0,
-    "advancement": "spectrum:midgame/build_advanced_pedestal_structure",
+    "advancement": "spectrum:midgame/enter_liquid_crystal",
     "category": "spectrum:enchanting_category",
     "pages": [
         {
@@ -21,11 +21,12 @@
             "name": "Enchanting Structure",
             "multiblock_id": "spectrum:enchanter_structure",
             "enable_visualize": true,
-            "text": "The holes beneath the gemstone blocks have to be filled with $(l:magical_blocks/liquid_crystal)Liquid Crystal$(). (not shown)"
+            "text": "The pools around the gemstone blocks have to be filled with $(l:magical_blocks/liquid_crystal)Liquid Crystal$(). (not shown)"
         },
         {
             "type": "patchouli:text",
-            "text": "As usual, you are able to switch the Basalt Blocks with Calcite and choose the Gemstone Blocks as you like it best.$(br2)Enhance the Enchanter with Upgrades by placing them on the Gemstone Blocks."
+            "title": "Block Checklist",
+            "text": "$(li)1 Enchanter$(li)8 Item Bowls$(li)4+ Liquid Crystal Buckets$(li)4 Polished Gemstone Blocks$(li)8 Gemstone Lamps$(li)12 Polished Pillars$(li)24 Polished Slabs$(li)159 Polished Blocks$(br2)Enhance the Enchanter with Upgrades by placing them on the Gemstone Blocks."
         }
     ]
 }

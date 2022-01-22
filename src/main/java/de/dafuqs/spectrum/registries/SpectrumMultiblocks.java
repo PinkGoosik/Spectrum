@@ -4,7 +4,9 @@ import de.dafuqs.spectrum.SpectrumCommon;
 import de.dafuqs.spectrum.enums.PedestalRecipeTier;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import vazkii.patchouli.api.IMultiblock;
 import vazkii.patchouli.api.PatchouliAPI;
 import vazkii.patchouli.common.multiblock.StateMatcher;
@@ -43,7 +45,6 @@ public class SpectrumMultiblocks {
 		Object[] targetBlocks = {
 				'X', "#spectrum:polished_base_blocks",
 				'P', "#spectrum:pillar_base_blocks",
-				'L', "#spectrum:gemstone_lamps",
 				'L', "#spectrum:polished_base_block_slabs",
 				'S', "#spectrum:gemstone_storage_blocks",
 				'C', "#spectrum:chiseled_base_blocks",
@@ -167,13 +168,14 @@ public class SpectrumMultiblocks {
 		PEDESTAL_COMPLEX_STRUCTURE_IDENTIFIER_PLACE = registerMultiBlock("pedestal_complex_structure_place", tier3Structure, targetBlocksPlace);
 	}
 
-	public static Identifier getDisplayStructureIdentifierForTier(@NotNull PedestalRecipeTier pedestalRecipeTier) {
+	@Contract(pure = true)
+	public static @Nullable Identifier getDisplayStructureIdentifierForTier(@NotNull PedestalRecipeTier pedestalRecipeTier) {
 		switch (pedestalRecipeTier) {
 			case COMPLEX -> {
-				return SpectrumMultiblocks.PEDESTAL_COMPLEX_STRUCTURE_IDENTIFIER_PLACE;
+				return SpectrumMultiblocks.PEDESTAL_COMPLEX_STRUCTURE_IDENTIFIER_CHECK;
 			}
 			case ADVANCED -> {
-				return SpectrumMultiblocks.PEDESTAL_ADVANCED_STRUCTURE_IDENTIFIER_PLACE;
+				return SpectrumMultiblocks.PEDESTAL_ADVANCED_STRUCTURE_IDENTIFIER_CHECK;
 			}
 			case SIMPLE -> {
 				return SpectrumMultiblocks.PEDESTAL_SIMPLE_STRUCTURE_IDENTIFIER_CHECK;
@@ -182,7 +184,7 @@ public class SpectrumMultiblocks {
 		return null;
 	}
 
-	public static TranslatableText getPedestalStructureText(@NotNull PedestalRecipeTier pedestalRecipeTier) {
+	public static @Nullable TranslatableText getPedestalStructureText(@NotNull PedestalRecipeTier pedestalRecipeTier) {
 		switch (pedestalRecipeTier) {
 			case COMPLEX -> {
 				return new TranslatableText("multiblock.spectrum.pedestal.complex_structure");

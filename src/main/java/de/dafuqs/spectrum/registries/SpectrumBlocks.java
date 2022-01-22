@@ -13,7 +13,7 @@ import de.dafuqs.spectrum.blocks.conditional.*;
 import de.dafuqs.spectrum.blocks.decay.DecayAwayBlock;
 import de.dafuqs.spectrum.blocks.decay.FadingBlock;
 import de.dafuqs.spectrum.blocks.decay.FailingBlock;
-import de.dafuqs.spectrum.blocks.decay.RuinBlock;
+import de.dafuqs.spectrum.blocks.decay.TerrorBlock;
 import de.dafuqs.spectrum.blocks.decoration.*;
 import de.dafuqs.spectrum.blocks.deeper_down_portal.DeeperDownPortalBlock;
 import de.dafuqs.spectrum.blocks.enchanter.EnchanterBlock;
@@ -37,6 +37,7 @@ import de.dafuqs.spectrum.blocks.mob_head.SpectrumSkullBlock;
 import de.dafuqs.spectrum.blocks.mob_head.SpectrumSkullBlockItem;
 import de.dafuqs.spectrum.blocks.mob_head.SpectrumWallSkullBlock;
 import de.dafuqs.spectrum.blocks.particle_spawner.ParticleSpawnerBlock;
+import de.dafuqs.spectrum.blocks.pastel_network.nodes.PastelNetworkNodeBlock;
 import de.dafuqs.spectrum.blocks.pedestal.PedestalBlock;
 import de.dafuqs.spectrum.blocks.pedestal.PedestalBlockItem;
 import de.dafuqs.spectrum.blocks.redstone.*;
@@ -45,6 +46,7 @@ import de.dafuqs.spectrum.blocks.upgrade.UpgradeBlock;
 import de.dafuqs.spectrum.blocks.upgrade.UpgradeBlockItem;
 import de.dafuqs.spectrum.blocks.upgrade.Upgradeable;
 import de.dafuqs.spectrum.enums.GemstoneColor;
+import de.dafuqs.spectrum.particle.SpectrumParticleTypes;
 import de.dafuqs.spectrum.sound.SpectrumBlockSoundGroups;
 import de.dafuqs.spectrum.sound.SpectrumSoundEvents;
 import de.dafuqs.spectrum.worldgen.ColoredSaplingGenerator;
@@ -59,6 +61,7 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
@@ -240,7 +243,19 @@ public class SpectrumBlocks {
 	public static final Block GLOWING_GLASS = new GemGlassBlock(FabricBlockSettings.copy(Blocks.GLASS).luminance(value -> 12));
 
 	public static final Block ETHEREAL_PLATFORM = new EtherealGlassBlock(FabricBlockSettings.copy(Blocks.SMALL_AMETHYST_BUD).sounds(BlockSoundGroup.AMETHYST_BLOCK));
-
+	
+	public static final Block TOPAZ_CHIME = new GemstoneChimeBlock(FabricBlockSettings.copyOf(TOPAZ_CLUSTER).hardness(1.0F).sounds(SpectrumBlockSoundGroups.TOPAZ_CLUSTER).nonOpaque(), SpectrumSoundEvents.BLOCK_TOPAZ_BLOCK_CHIME, SpectrumParticleTypes.CYAN_SPARKLE_RISING);
+	public static final Block AMETHYST_CHIME = new GemstoneChimeBlock(FabricBlockSettings.copyOf(Blocks.AMETHYST_CLUSTER).hardness(1.0F).sounds(BlockSoundGroup.AMETHYST_CLUSTER).nonOpaque(), SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME, SpectrumParticleTypes.MAGENTA_SPARKLE_RISING);
+	public static final Block CITRINE_CHIME = new GemstoneChimeBlock(FabricBlockSettings.copyOf(CITRINE_CLUSTER).hardness(1.0F).sounds(SpectrumBlockSoundGroups.CITRINE_CLUSTER).nonOpaque(), SpectrumSoundEvents.BLOCK_CITRINE_BLOCK_CHIME, SpectrumParticleTypes.YELLOW_SPARKLE_RISING);
+	public static final Block ONYX_CHIME = new GemstoneChimeBlock(FabricBlockSettings.copyOf(ONYX_CLUSTER).hardness(1.0F).sounds(SpectrumBlockSoundGroups.ONYX_CLUSTER).nonOpaque(), SpectrumSoundEvents.BLOCK_ONYX_BLOCK_CHIME, SpectrumParticleTypes.BLACK_SPARKLE_RISING);
+	public static final Block MOONSTONE_CHIME = new GemstoneChimeBlock(FabricBlockSettings.copyOf(MOONSTONE_CLUSTER).hardness(1.0F).sounds(SpectrumBlockSoundGroups.MOONSTONE_CLUSTER).nonOpaque(), SpectrumSoundEvents.BLOCK_MOONSTONE_BLOCK_CHIME, SpectrumParticleTypes.WHITE_SPARKLE_RISING);
+	
+	public static final Block TOPAZ_DECOSTONE = new DecoStoneBlock(FabricBlockSettings.copyOf(TOPAZ_BLOCK).hardness(3.0F).sounds(SpectrumBlockSoundGroups.TOPAZ_CLUSTER).nonOpaque());
+	public static final Block AMETHYST_DECOSTONE = new DecoStoneBlock(FabricBlockSettings.copyOf(Blocks.AMETHYST_BLOCK).hardness(3.0F).sounds(BlockSoundGroup.AMETHYST_CLUSTER).nonOpaque());
+	public static final Block CITRINE_DECOSTONE = new DecoStoneBlock(FabricBlockSettings.copyOf(CITRINE_BLOCK).hardness(3.0F).sounds(SpectrumBlockSoundGroups.CITRINE_CLUSTER).nonOpaque());
+	public static final Block ONYX_DECOSTONE = new DecoStoneBlock(FabricBlockSettings.copyOf(ONYX_BLOCK).hardness(3.0F).sounds(SpectrumBlockSoundGroups.ONYX_CLUSTER).nonOpaque());
+	public static final Block MOONSTONE_DECOSTONE = new DecoStoneBlock(FabricBlockSettings.copyOf(MOONSTONE_BLOCK).hardness(3.0F).sounds(SpectrumBlockSoundGroups.MOONSTONE_CLUSTER).nonOpaque());
+	
 	// PLAYER GLASS
 	public static final Block VANILLA_PLAYER_ONLY_GLASS = new PlayerOnlyGlassBlock(FabricBlockSettings.copy(Blocks.GLASS).nonOpaque().allowsSpawning(SpectrumBlocks::never).solidBlock(SpectrumBlocks::never).suffocates(SpectrumBlocks::never).blockVision(SpectrumBlocks::never), false);
 	public static final Block TINTED_PLAYER_ONLY_GLASS = new PlayerOnlyGlassBlock(FabricBlockSettings.copy(Blocks.TINTED_GLASS).nonOpaque().allowsSpawning(SpectrumBlocks::never).solidBlock(SpectrumBlocks::never).suffocates(SpectrumBlocks::never).blockVision(SpectrumBlocks::never), true);
@@ -265,15 +280,24 @@ public class SpectrumBlocks {
 	public static final Block WAND_LIGHT_BLOCK = new WandLightBlock(FabricBlockSettings.copyOf(Blocks.LIGHT).sounds(SpectrumBlockSoundGroups.WAND_LIGHT).breakInstantly().breakByHand(true));
 
 	// DECAY
-	public static final Block FADING = new FadingBlock(FabricBlockSettings.of(SpectrumMaterial.DECAY, MapColor.BLACK).ticksRandomly().requiresTool().strength(0.5F, 0.5F), SpectrumBlockTags.FADING_CONVERSIONS, null,1,  1F);
+	public static final Block FADING = new FadingBlock(FabricBlockSettings.of(SpectrumBlockMaterials.DECAY, MapColor.BLACK).ticksRandomly().requiresTool().strength(0.5F, 0.5F), SpectrumBlockTags.FADING_CONVERSIONS, null,1,  1F);
 	public static final Block FAILING = new FailingBlock(FabricBlockSettings.copyOf(FADING).strength(20.0F, 50.0F), null, SpectrumBlockTags.FAILING_SAFE, 2,  2.5F);
-	public static final Block RUIN = new RuinBlock(FabricBlockSettings.copyOf(FADING).strength(100.0F, 3600000.0F), null, SpectrumBlockTags.RUIN_SAFE, 3, 5F);
+	public static final Block RUIN = new TerrorBlock(FabricBlockSettings.copyOf(FADING).strength(100.0F, 3600000.0F), null, SpectrumBlockTags.RUIN_SAFE, 3, 5F);
+	public static final Block TERROR = new TerrorBlock(FabricBlockSettings.copyOf(FADING).strength(100.0F, 3600000.0F), null, SpectrumBlockTags.TERROR_SAFE, 4, 7.5F);
 	public static final Block DECAY_AWAY = new DecayAwayBlock(FabricBlockSettings.copyOf(Blocks.DIRT));
 
 	// FLUIDS
 	public static final Block LIQUID_CRYSTAL = new LiquidCrystalFluidBlock(SpectrumFluids.LIQUID_CRYSTAL, FabricBlockSettings.copyOf(Blocks.WATER).luminance((state) -> 8));
 	public static final Block MUD = new MudFluidBlock(SpectrumFluids.MUD, FabricBlockSettings.copyOf(Blocks.WATER).suffocates(SpectrumBlocks::always));
 
+	// PASTEL NETWORK
+	public static final Block CONNECTION_NODE = new PastelNetworkNodeBlock(FabricBlockSettings.of(Material.AMETHYST).hardness(1.5F).nonOpaque().requiresTool().sounds(BlockSoundGroup.AMETHYST_CLUSTER), "block.spectrum.connection_node.tooltip");
+	public static final Block PROVIDER_NODE = new PastelNetworkNodeBlock(FabricBlockSettings.of(Material.AMETHYST).hardness(1.5F).nonOpaque().requiresTool().sounds(BlockSoundGroup.AMETHYST_CLUSTER), "block.spectrum.provider_node.tooltip");
+	public static final Block STORAGE_NODE = new PastelNetworkNodeBlock(FabricBlockSettings.of(Material.AMETHYST).hardness(1.5F).nonOpaque().requiresTool().sounds(SpectrumBlockSoundGroups.TOPAZ_CLUSTER), "block.spectrum.storage_node.tooltip");
+	public static final Block PUSHER_NODE = new PastelNetworkNodeBlock(FabricBlockSettings.of(Material.AMETHYST).hardness(1.5F).nonOpaque().requiresTool().sounds(SpectrumBlockSoundGroups.CITRINE_CLUSTER), "block.spectrum.pusher_node.tooltip");
+	public static final Block PULLER_NODE = new PastelNetworkNodeBlock(FabricBlockSettings.of(Material.AMETHYST).hardness(1.5F).nonOpaque().requiresTool().sounds(SpectrumBlockSoundGroups.ONYX_CLUSTER), "block.spectrum.puller_node.tooltip");
+	public static final Block INTERACTION_NODE = new Block(FabricBlockSettings.of(Material.AMETHYST).hardness(5.0F).nonOpaque().requiresTool().sounds(SpectrumBlockSoundGroups.MOONSTONE_CLUSTER));
+	
 	// COLORED TREES
 	private static final FabricBlockSettings coloredSaplingBlockSettings = FabricBlockSettings.copyOf(Blocks.OAK_SAPLING);
 	private static final FabricBlockSettings coloredLeavesBlockSettings = FabricBlockSettings.copyOf(Blocks.OAK_LEAVES).luminance((state) -> 2);
@@ -614,6 +638,13 @@ public class SpectrumBlocks {
 
 	public static final Block SACRED_SOIL = new ExtraTickFarmlandBlock(FabricBlockSettings.copyOf(Blocks.FARMLAND));
 	public static final Block STUCK_LIGHTNING_STONE = new LightningStoneBlock(FabricBlockSettings.copyOf(Blocks.DIRT));
+	
+	private static final FabricBlockSettings shootingStartBlockSettings = FabricBlockSettings.copyOf(Blocks.STONE);
+	public static final Block GLISTERING_SHOOTING_STAR = new ShootingStarBlock(shootingStartBlockSettings, ShootingStarBlock.Type.GLISTERING);
+	public static final Block FIERY_SHOOTING_STAR = new ShootingStarBlock(shootingStartBlockSettings, ShootingStarBlock.Type.FIERY);
+	public static final Block COLORFUL_SHOOTING_STAR = new ShootingStarBlock(shootingStartBlockSettings, ShootingStarBlock.Type.COLORFUL);
+	public static final Block PRISTINE_SHOOTING_STAR = new ShootingStarBlock(shootingStartBlockSettings, ShootingStarBlock.Type.PRISTINE);
+	public static final Block GEMSTONE_SHOOTING_STAR = new ShootingStarBlock(shootingStartBlockSettings, ShootingStarBlock.Type.GEMSTONE);
 
 	public static final Block DEEPER_DOWN_PORTAL = new DeeperDownPortalBlock(FabricBlockSettings.copyOf(Blocks.END_PORTAL));
 	
@@ -676,11 +707,13 @@ public class SpectrumBlocks {
 		registerBlockWithItem("upgrade_yield2", UPGRADE_YIELD2, new UpgradeBlockItem(UPGRADE_YIELD2, generalItemSettingsRareEight, "upgrade_yield2"));
 		registerBlockWithItem("upgrade_experience", UPGRADE_EXPERIENCE, new UpgradeBlockItem(UPGRADE_EXPERIENCE, generalItemSettingsEight, "upgrade_experience"));
 		registerBlockWithItem("upgrade_experience2", UPGRADE_EXPERIENCE2, new UpgradeBlockItem(UPGRADE_EXPERIENCE2, generalItemSettingsUncommonEight, "upgrade_experience2"));
-
+		
+		registerPastelNetworkNodes(generalItemSettingsSixteen);
 		registerStoneBlocks(decorationItemSettings);
 		registerGemBlocks(resourcesItemSettings);
 		registerBlockWithItem("spectral_shard_block", SPECTRAL_SHARD_BLOCK, resourcesItemSettingsRare);
 		registerBlockWithItem("bedrock_storage_block", BEDROCK_STORAGE_BLOCK, decorationItemSettingsRare);
+		registerShootingStarBlocks(resourcesItemSettingsUncommon);
 		
 		registerGemOreBlocks(resourcesItemSettings);
 		registerOreBlocks(resourcesItemSettings);
@@ -690,6 +723,8 @@ public class SpectrumBlocks {
 		registerRunes(decorationItemSettings);
 		registerGemstoneGlass(decorationItemSettings);
 		registerPlayerOnlyGlass(generalItemSettings);
+		registerGemstoneChimes(decorationItemSettings);
+		registerDecoStones(decorationItemSettings);
 		registerPigmentStorageBlocks(decorationItemSettings);
 		registerColoredLamps(decorationItemSettings);
 		registerGlowBlocks(decorationItemSettings);
@@ -704,6 +739,7 @@ public class SpectrumBlocks {
 		registerBlock("fading", FADING);
 		registerBlock("failing", FAILING);
 		registerBlock("ruin", RUIN);
+		registerBlock("terror", TERROR);
 		registerBlock("decay_away", DECAY_AWAY);
 
 		// Fluids + Products
@@ -872,6 +908,22 @@ public class SpectrumBlocks {
 		registerBlockWithItem("citrine_player_only_glass", CITRINE_PLAYER_ONLY_GLASS, fabricItemSettings);
 		registerBlockWithItem("onyx_player_only_glass", ONYX_PLAYER_ONLY_GLASS, fabricItemSettings);
 		registerBlockWithItem("moonstone_player_only_glass", MOONSTONE_PLAYER_ONLY_GLASS, fabricItemSettings);
+	}
+	
+	private static void registerGemstoneChimes(FabricItemSettings fabricItemSettings) {
+		registerBlockWithItem("amethyst_chime", AMETHYST_CHIME, fabricItemSettings);
+		registerBlockWithItem("topaz_chime", TOPAZ_CHIME, fabricItemSettings);
+		registerBlockWithItem("citrine_chime", CITRINE_CHIME, fabricItemSettings);
+		registerBlockWithItem("moonstone_chime", MOONSTONE_CHIME, fabricItemSettings);
+		registerBlockWithItem("onyx_chime", ONYX_CHIME, fabricItemSettings);
+	}
+	
+	private static void registerDecoStones(FabricItemSettings fabricItemSettings) {
+		registerBlockWithItem("amethyst_decostone", AMETHYST_DECOSTONE, fabricItemSettings);
+		registerBlockWithItem("topaz_decostone", TOPAZ_DECOSTONE, fabricItemSettings);
+		registerBlockWithItem("citrine_decostone", CITRINE_DECOSTONE, fabricItemSettings);
+		registerBlockWithItem("moonstone_decostone", MOONSTONE_DECOSTONE, fabricItemSettings);
+		registerBlockWithItem("onyx_decostone", ONYX_DECOSTONE, fabricItemSettings);
 	}
 
 	private static void registerStoneBlocks(FabricItemSettings fabricItemSettings) {
@@ -1137,6 +1189,24 @@ public class SpectrumBlocks {
 		registerBlockWithItem("andesite_sparklestone_light", ANDESITE_SPARKLESTONE_LIGHT, fabricItemSettings);
 		registerBlockWithItem("deepslate_sparklestone_light", DEEPSLATE_SPARKLESTONE_LIGHT, fabricItemSettings);
 	}
+	
+	public static void registerShootingStarBlocks(FabricItemSettings fabricItemSettings) {
+		registerBlockWithItem("shooting_star_glistering", GLISTERING_SHOOTING_STAR, fabricItemSettings);
+		registerBlockWithItem("shooting_star_fiery", FIERY_SHOOTING_STAR, fabricItemSettings);
+		registerBlockWithItem("shooting_star_colorful", COLORFUL_SHOOTING_STAR, fabricItemSettings);
+		registerBlockWithItem("shooting_star_pristine", PRISTINE_SHOOTING_STAR, fabricItemSettings);
+		registerBlockWithItem("shooting_star_gemstone", GEMSTONE_SHOOTING_STAR, fabricItemSettings);
+	}
+	
+	public static void registerPastelNetworkNodes(FabricItemSettings fabricItemSettings) {
+		registerBlockWithItem("connection_node", CONNECTION_NODE, fabricItemSettings);
+		registerBlockWithItem("provider_node", PROVIDER_NODE, fabricItemSettings);
+		registerBlockWithItem("storage_node", STORAGE_NODE, fabricItemSettings);
+		registerBlockWithItem("pusher_node", PUSHER_NODE, fabricItemSettings);
+		registerBlockWithItem("puller_node", PULLER_NODE, fabricItemSettings);
+		registerBlockWithItem("interaction_node", INTERACTION_NODE, fabricItemSettings);
+	}
+	
 	public static void registerSporeBlossoms(FabricItemSettings fabricItemSettings) {
 		registerBlockWithItem("white_spore_blossom", WHITE_SPORE_BLOSSOM, fabricItemSettings);
 		registerBlockWithItem("orange_spore_blossom", ORANGE_SPORE_BLOSSOM, fabricItemSettings);
@@ -1351,6 +1421,20 @@ public class SpectrumBlocks {
 		BlockRenderLayerMap.INSTANCE.putBlock(SpectrumBlocks.WHITE_LAMP, RenderLayer.getTranslucent());
 		BlockRenderLayerMap.INSTANCE.putBlock(SpectrumBlocks.YELLOW_LAMP, RenderLayer.getTranslucent());
 
+		// DECOSTONES
+		BlockRenderLayerMap.INSTANCE.putBlock(SpectrumBlocks.TOPAZ_DECOSTONE, RenderLayer.getTranslucent());
+		BlockRenderLayerMap.INSTANCE.putBlock(SpectrumBlocks.AMETHYST_DECOSTONE, RenderLayer.getTranslucent());
+		BlockRenderLayerMap.INSTANCE.putBlock(SpectrumBlocks.CITRINE_DECOSTONE, RenderLayer.getTranslucent());
+		BlockRenderLayerMap.INSTANCE.putBlock(SpectrumBlocks.MOONSTONE_DECOSTONE, RenderLayer.getTranslucent());
+		BlockRenderLayerMap.INSTANCE.putBlock(SpectrumBlocks.ONYX_DECOSTONE, RenderLayer.getTranslucent());
+		
+		// CHIMES
+		BlockRenderLayerMap.INSTANCE.putBlock(SpectrumBlocks.TOPAZ_CHIME, RenderLayer.getTranslucent());
+		BlockRenderLayerMap.INSTANCE.putBlock(SpectrumBlocks.AMETHYST_CHIME, RenderLayer.getTranslucent());
+		BlockRenderLayerMap.INSTANCE.putBlock(SpectrumBlocks.CITRINE_CHIME, RenderLayer.getTranslucent());
+		BlockRenderLayerMap.INSTANCE.putBlock(SpectrumBlocks.MOONSTONE_CHIME, RenderLayer.getTranslucent());
+		BlockRenderLayerMap.INSTANCE.putBlock(SpectrumBlocks.ONYX_CHIME, RenderLayer.getTranslucent());
+		
 		// Others
 		BlockRenderLayerMap.INSTANCE.putBlock(SpectrumBlocks.GLISTERING_MELON_STEM, RenderLayer.getCutout());
 		BlockRenderLayerMap.INSTANCE.putBlock(SpectrumBlocks.ATTACHED_GLISTERING_MELON_STEM, RenderLayer.getCutout());

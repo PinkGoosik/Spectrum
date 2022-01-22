@@ -1,22 +1,20 @@
 package de.dafuqs.spectrum;
 
-import de.dafuqs.spectrum.items.PigmentItem;
 import de.dafuqs.spectrum.progression.ClientAdvancements;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.advancement.Advancement;
 import net.minecraft.advancement.PlayerAdvancementTracker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.DyeItem;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.ServerAdvancementLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.tag.Tag;
-import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import org.apache.logging.log4j.Level;
@@ -129,13 +127,14 @@ public class Support {
 		// grant group advancement
 		Identifier advancementIdentifier = new Identifier(SpectrumCommon.MOD_ID, advancementString);
 		Advancement advancement = sal.get(advancementIdentifier);
-		if (advancement != null) {
-			tracker.grantCriterion(advancement, criterion);
-		} else {
+		if(advancement == null) {
 			SpectrumCommon.log(Level.ERROR, "Trying to grant a criterion \"" + criterion +  "\" for an advancement that does not exist: " + advancementIdentifier);
 		}
+		if (!tracker.getProgress(advancement).isDone()) {
+			tracker.grantCriterion(advancement, criterion);
+		}
 	}
-
+	
 	public static boolean hasAdvancement(PlayerEntity playerEntity, Identifier advancementIdentifier) {
 		if(playerEntity == null) {
 			return false;
@@ -146,16 +145,26 @@ public class Support {
 		if (playerEntity instanceof ServerPlayerEntity) {
 			Advancement advancement = SpectrumCommon.minecraftServer.getAdvancementLoader().get(advancementIdentifier);
 			if (advancement == null) {
-				SpectrumCommon.log(Level.ERROR, "Player " + playerEntity.getName() + " was getting an advancement check for an advancement that does not exist: " + advancementIdentifier.toString());
+				SpectrumCommon.log(Level.ERROR, "Player " + playerEntity.getName() + " was getting an advancement check for an advancement that does not exist: " + advancementIdentifier);
 				return false;
 			} else {
 				return ((ServerPlayerEntity) playerEntity).getAdvancementTracker().getProgress(advancement).isDone();
 			}
+		// we cannot test for "net.minecraft.client.network.ClientPlayerEntity" there because that will get obfuscated
+		// to "net.minecraft.class_xxxxx" in compiled versions => works in dev env, breaks in prod
+		} else if(playerEntity.getClass().getCanonicalName().startsWith("net.minecraft")) {
+			return hasAdvancementClient(advancementIdentifier);
 		} else {
-			return ClientAdvancements.hasDone(advancementIdentifier);
+			// thank you, Kibe FakePlayerEntity
+			// it neither is a ServerPlayerEntity, nor a ClientPlayerEntity
+			return false;
 		}
 	}
-
+	
+	@Environment(EnvType.CLIENT)
+	public static boolean hasAdvancementClient(Identifier advancementIdentifier) {
+		return ClientAdvancements.hasDone(advancementIdentifier);
+	}
 
 	public static @NotNull String getReadableDimensionString(@NotNull String dimensionKeyString) {
 		switch (dimensionKeyString) {
@@ -172,18 +181,6 @@ public class Support {
 					return dimensionKeyString;
 				}
 		}
-	}
-
-	public static Optional<DyeColor> getDyeColorOfItemStack(ItemStack itemStack) {
-		if(!itemStack.isEmpty()) {
-			Item item = itemStack.getItem();
-			if(item instanceof DyeItem dyeItem) {
-				return Optional.of(dyeItem.getColor());
-			} else if(item instanceof PigmentItem pigmentItem) {
-				return Optional.of(pigmentItem.getColor());
-			}
-		}
-		return Optional.empty();
 	}
 	
 }

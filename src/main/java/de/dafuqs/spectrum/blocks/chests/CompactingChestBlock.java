@@ -6,7 +6,6 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -30,9 +29,9 @@ public class CompactingChestBlock extends SpectrumChestBlock {
 
 	public void openScreen(World world, BlockPos pos, PlayerEntity player) {
 		BlockEntity blockEntity = world.getBlockEntity(pos);
-		if (blockEntity instanceof CompactingChestBlockEntity) {
+		if (blockEntity instanceof CompactingChestBlockEntity compactingChestBlockEntity) {
 			if(!isChestBlocked(world, pos)) {
-				player.openHandledScreen((NamedScreenHandlerFactory) blockEntity);
+				player.openHandledScreen(compactingChestBlockEntity);
 			}
 		}
 	}

@@ -16,10 +16,14 @@ import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.ExperienceOrbEntity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.particle.*;
+import net.minecraft.particle.ItemStackParticleEffect;
+import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleType;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
@@ -41,18 +45,21 @@ public class SpectrumS2CPackets {
 	public static final Identifier PLAY_PEDESTAL_CRAFTING_FINISHED_PARTICLE_PACKET_ID = new Identifier(SpectrumCommon.MOD_ID, "play_pedestal_crafting_finished_particle");
 	public static final Identifier PLAY_PEDESTAL_UPGRADED_PARTICLE_PACKET_ID = new Identifier(SpectrumCommon.MOD_ID, "play_pedestal_upgraded_particle");
 	public static final Identifier PLAY_FUSION_CRAFTING_FINISHED_PARTICLE_PACKET_ID = new Identifier(SpectrumCommon.MOD_ID, "play_fusion_crafting_finished_particle");
-	public static final Identifier PLAY_PARTICLE_PACKET_ID = new Identifier(SpectrumCommon.MOD_ID, "play_particle");
-	public static final Identifier PLAY_PARTICLE_PACKET_WITH_OFFSET_ID = new Identifier(SpectrumCommon.MOD_ID, "play_particle_with_offset");
-	public static final Identifier PLAY_PARTICLE_PACKET_WITH_OFFSET_AND_FIXED_VELOCITY_ID = new Identifier(SpectrumCommon.MOD_ID, "play_particle_with_offset_and_fixed_position");
+	public static final Identifier PLAY_PARTICLE_AT_EXACT_BLOCK_POSITION_WITHOUT_VELOCITY_ID = new Identifier(SpectrumCommon.MOD_ID, "play_particle");
+	public static final Identifier PLAY_PARTICLE_PACKET_WITH_RANDOM_OFFSET_AND_VELOCITY_ID = new Identifier(SpectrumCommon.MOD_ID, "play_particle_with_offset");
+	public static final Identifier PLAY_PARTICLE_PACKET_WITH_EXACT_OFFSET_AND_VELOCITY_ID = new Identifier(SpectrumCommon.MOD_ID, "play_particle_with_random_offset_and_velocity");
 	public static final Identifier CHANGE_PARTICLE_SPAWNER_SETTINGS_CLIENT_PACKET_ID = new Identifier(SpectrumCommon.MOD_ID, "change_particle_spawner_settings_client");
 	public static final Identifier INITIATE_ITEM_TRANSFER = new Identifier(SpectrumCommon.MOD_ID, "initiate_item_transfer");
+	public static final Identifier INITIATE_TRANSPHERE = new Identifier(SpectrumCommon.MOD_ID, "initiate_transphere");
+	public static final Identifier INITIATE_EXPERIENCE_TRANSFER = new Identifier(SpectrumCommon.MOD_ID, "initiate_experience_transfer");
 	public static final Identifier INITIATE_WIRELESS_REDSTONE_TRANSMISSION = new Identifier(SpectrumCommon.MOD_ID, "initiate_wireless_redstone_transmission");
 	public static final Identifier PLAY_ITEM_ENTITY_ABSORBED_PARTICLE_EFFECT_PACKET_ID = new Identifier(SpectrumCommon.MOD_ID, "item_entity_absorbed");
+	public static final Identifier PLAY_EXPERIENCE_ORB_ENTITY_ABSORBED_PARTICLE_EFFECT_PACKET_ID = new Identifier(SpectrumCommon.MOD_ID, "experience_orb_entity_absorbed");
 	public static final Identifier PLAY_BLOCK_BOUND_SOUND_INSTANCE = new Identifier(SpectrumCommon.MOD_ID, "play_pedestal_crafting_sound_instance");
 
 	@Environment(EnvType.CLIENT)
 	public static void registerS2CReceivers() {
-		ClientPlayNetworking.registerGlobalReceiver(PLAY_PARTICLE_PACKET_ID, (client, handler, buf, responseSender) -> {
+		ClientPlayNetworking.registerGlobalReceiver(PLAY_PARTICLE_AT_EXACT_BLOCK_POSITION_WITHOUT_VELOCITY_ID, (client, handler, buf, responseSender) -> {
 			BlockPos position = buf.readBlockPos();
 			ParticleType<?> particleType = Registry.PARTICLE_TYPE.get(buf.readIdentifier());
 			int amount = buf.readInt();
@@ -66,7 +73,7 @@ public class SpectrumS2CPackets {
 			}
 		});
 		
-		ClientPlayNetworking.registerGlobalReceiver(PLAY_PARTICLE_PACKET_WITH_OFFSET_ID, (client, handler, buf, responseSender) -> {
+		ClientPlayNetworking.registerGlobalReceiver(PLAY_PARTICLE_PACKET_WITH_RANDOM_OFFSET_AND_VELOCITY_ID, (client, handler, buf, responseSender) -> {
 			Vec3d position = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
 			ParticleType<?> particleType = Registry.PARTICLE_TYPE.get(buf.readIdentifier());
 			int amount = buf.readInt();
@@ -94,7 +101,7 @@ public class SpectrumS2CPackets {
 			}
 		});
 		
-		ClientPlayNetworking.registerGlobalReceiver(PLAY_PARTICLE_PACKET_WITH_OFFSET_AND_FIXED_VELOCITY_ID, (client, handler, buf, responseSender) -> {
+		ClientPlayNetworking.registerGlobalReceiver(PLAY_PARTICLE_PACKET_WITH_EXACT_OFFSET_AND_VELOCITY_ID, (client, handler, buf, responseSender) -> {
 			Vec3d position = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
 			ParticleType<?> particleType = Registry.PARTICLE_TYPE.get(buf.readIdentifier());
 			int amount = buf.readInt();
@@ -103,7 +110,6 @@ public class SpectrumS2CPackets {
 			if(particleType instanceof ParticleEffect particleEffect) {
 				client.execute(() -> {
 					// Everything in this lambda is running on the render thread
-					Random random = client.world.random;
 					for(int i = 0; i < amount; i++) {
 						MinecraftClient.getInstance().player.getEntityWorld().addParticle(particleEffect,
 								position.getX() + randomOffset.x, position.getY() + randomOffset.y, position.getZ() + randomOffset.z,
@@ -183,6 +189,28 @@ public class SpectrumS2CPackets {
 			});
 		});
 
+		ClientPlayNetworking.registerGlobalReceiver(INITIATE_TRANSPHERE, (client, handler, buf, responseSender) -> {
+			Transphere transphere = Transphere.readFromBuf(buf);
+			BlockPos blockPos = transphere.getOrigin();
+			client.execute(() -> {
+				// Everything in this lambda is running on the render thread
+				for(int i = 0; i < 10; i++) {
+					MinecraftClient.getInstance().player.getEntityWorld().addImportantParticle(new TransphereParticleEffect(transphere), true, (double)blockPos.getX() + 0.5D, (double)blockPos.getY() + 0.5D, (double)blockPos.getZ() + 0.5D, 0.0D, 0.0D, 0.0D);
+				}
+			});
+		});
+
+		ClientPlayNetworking.registerGlobalReceiver(INITIATE_EXPERIENCE_TRANSFER, (client, handler, buf, responseSender) -> {
+			ExperienceTransfer experienceTransfer = ExperienceTransfer.readFromBuf(buf);
+			BlockPos blockPos = experienceTransfer.getOrigin();
+			client.execute(() -> {
+				// Everything in this lambda is running on the render thread
+				for(int i = 0; i < 10; i++) {
+					MinecraftClient.getInstance().player.getEntityWorld().addImportantParticle(new ExperienceTransferParticleEffect(experienceTransfer), true, (double)blockPos.getX() + 0.5D, (double)blockPos.getY() + 0.5D, (double)blockPos.getZ() + 0.5D, 0.0D, 0.0D, 0.0D);
+				}
+			});
+		});
+
 		ClientPlayNetworking.registerGlobalReceiver(INITIATE_WIRELESS_REDSTONE_TRANSMISSION, (client, handler, buf, responseSender) -> {
 			WirelessRedstoneTransmission wirelessRedstoneTransmission = WirelessRedstoneTransmission.readFromBuf(buf);
 			BlockPos blockPos = wirelessRedstoneTransmission.getOrigin();
@@ -201,9 +229,18 @@ public class SpectrumS2CPackets {
 
 			client.execute(() -> {
 				// Everything in this lambda is running on the render thread
-				for(int i = 0; i < 10; i++) {
-					MinecraftClient.getInstance().player.getEntityWorld().addParticle(SpectrumParticleTypes.BLUE_BUBBLE_POP, posX, posY, posZ, 0, 0, 0);
-				}
+				MinecraftClient.getInstance().player.getEntityWorld().addParticle(SpectrumParticleTypes.BLUE_BUBBLE_POP, posX, posY, posZ, 0, 0, 0);
+			});
+		});
+
+		ClientPlayNetworking.registerGlobalReceiver(PLAY_EXPERIENCE_ORB_ENTITY_ABSORBED_PARTICLE_EFFECT_PACKET_ID, (client, handler, buf, responseSender) -> {
+			double posX = buf.readDouble();
+			double posY = buf.readDouble();
+			double posZ = buf.readDouble();
+
+			client.execute(() -> {
+				// Everything in this lambda is running on the render thread
+				MinecraftClient.getInstance().player.getEntityWorld().addParticle(SpectrumParticleTypes.GREEN_BUBBLE_POP, posX, posY, posZ, 0, 0, 0);
 			});
 		});
 		
@@ -228,39 +265,39 @@ public class SpectrumS2CPackets {
 	}
 
 	/**
-	 * Play anvil crafting particle effect
+	 * Play particle effect
 	 * @param world the world of the pedestal
 	 * @param position the pos of the particles
 	 * @param particleEffectIdentifier The particle effect identifier to play
 	 */
-	public static void playParticle(ServerWorld world, BlockPos position, Identifier particleEffectIdentifier, int amount) {
+	public static void playParticleWithRandomOffsetAndVelocity(ServerWorld world, BlockPos position, Identifier particleEffectIdentifier, int amount) {
 		PacketByteBuf buf = PacketByteBufs.create();
 		buf.writeBlockPos(position);
 		buf.writeIdentifier(particleEffectIdentifier);
 		buf.writeInt(amount);
 		// Iterate over all players tracking a position in the world and send the packet to each player
 		for (ServerPlayerEntity player : PlayerLookup.tracking(world, position)) {
-			ServerPlayNetworking.send(player, SpectrumS2CPackets.PLAY_PARTICLE_PACKET_ID, buf);
+			ServerPlayNetworking.send(player, SpectrumS2CPackets.PLAY_PARTICLE_AT_EXACT_BLOCK_POSITION_WITHOUT_VELOCITY_ID, buf);
 		}
 	}
 	
 	/**
-	 * Play anvil crafting particle effect
+	 * Play particle effect
 	 * @param world the world of the pedestal
 	 * @param position the pos of the particles
 	 * @param particleEffect The particle effect to play
 	 */
-	public static void playParticle(ServerWorld world, BlockPos position, ParticleType particleEffect, int amount) {
-		playParticle(world, position, Registry.PARTICLE_TYPE.getId(particleEffect), amount);
+	public static void playParticleWithRandomOffsetAndVelocity(ServerWorld world, BlockPos position, ParticleType particleEffect, int amount) {
+		playParticleWithRandomOffsetAndVelocity(world, position, Registry.PARTICLE_TYPE.getId(particleEffect), amount);
 	}
 	
 	/**
-	 * Play anvil crafting particle effect
+	 * Play particle effect
 	 * @param world the world of the pedestal
 	 * @param position the pos of the particles
 	 * @param particleEffectIdentifier The particle effect identifier to play
 	 */
-	public static void playParticle(ServerWorld world, Vec3d position, Identifier particleEffectIdentifier, int amount, Vec3d randomOffset, Vec3d randomVelocity) {
+	public static void playParticleWithRandomOffsetAndVelocity(ServerWorld world, Vec3d position, Identifier particleEffectIdentifier, int amount, Vec3d randomOffset, Vec3d randomVelocity) {
 		PacketByteBuf buf = PacketByteBufs.create();
 		buf.writeDouble(position.x);
 		buf.writeDouble(position.y);
@@ -276,7 +313,7 @@ public class SpectrumS2CPackets {
 		
 		// Iterate over all players tracking a position in the world and send the packet to each player
 		for (ServerPlayerEntity player : PlayerLookup.tracking(world, new BlockPos(position))) {
-			ServerPlayNetworking.send(player, SpectrumS2CPackets.PLAY_PARTICLE_PACKET_WITH_OFFSET_ID, buf);
+			ServerPlayNetworking.send(player, SpectrumS2CPackets.PLAY_PARTICLE_PACKET_WITH_RANDOM_OFFSET_AND_VELOCITY_ID, buf);
 		}
 	}
 	
@@ -286,8 +323,8 @@ public class SpectrumS2CPackets {
 	 * @param position the pos of the particles
 	 * @param particleEffect The particle effect to play
 	 */
-	public static void playParticleWithFixedVelocity(ServerWorld world, Vec3d position, ParticleEffect particleEffect, int amount, Vec3d randomOffset, Vec3d velocity) {
-		playParticleWithFixedVelocity(world, position, Registry.PARTICLE_TYPE.getId(particleEffect.getType()), amount, randomOffset, velocity);
+	public static void playParticleWithExactOffsetAndVelocity(ServerWorld world, Vec3d position, ParticleEffect particleEffect, int amount, Vec3d randomOffset, Vec3d randomVelocity) {
+		playParticleWithExactOffsetAndVelocity(world, position, Registry.PARTICLE_TYPE.getId(particleEffect.getType()), amount, randomOffset, randomVelocity);
 	}
 	
 	/**
@@ -296,7 +333,7 @@ public class SpectrumS2CPackets {
 	 * @param position the pos of the particles
 	 * @param particleEffectIdentifier The particle effect identifier to play
 	 */
-	public static void playParticleWithFixedVelocity(ServerWorld world, Vec3d position, Identifier particleEffectIdentifier, int amount, Vec3d randomOffset, Vec3d velocity) {
+	public static void playParticleWithExactOffsetAndVelocity(ServerWorld world, Vec3d position, Identifier particleEffectIdentifier, int amount, Vec3d randomOffset, Vec3d velocity) {
 		PacketByteBuf buf = PacketByteBufs.create();
 		buf.writeDouble(position.x);
 		buf.writeDouble(position.y);
@@ -312,7 +349,7 @@ public class SpectrumS2CPackets {
 		
 		// Iterate over all players tracking a position in the world and send the packet to each player
 		for (ServerPlayerEntity player : PlayerLookup.tracking(world, new BlockPos(position))) {
-			ServerPlayNetworking.send(player, SpectrumS2CPackets.PLAY_PARTICLE_PACKET_WITH_OFFSET_AND_FIXED_VELOCITY_ID, buf);
+			ServerPlayNetworking.send(player, SpectrumS2CPackets.PLAY_PARTICLE_PACKET_WITH_EXACT_OFFSET_AND_VELOCITY_ID, buf);
 		}
 	}
 	
@@ -322,8 +359,8 @@ public class SpectrumS2CPackets {
 	 * @param position the pos of the particles
 	 * @param particleEffect The particle effect to play
 	 */
-	public static void playParticle(ServerWorld world, Vec3d position, ParticleEffect particleEffect, int amount, Vec3d randomOffset, Vec3d randomVelocity) {
-		playParticle(world, position, Registry.PARTICLE_TYPE.getId(particleEffect.getType()), amount, randomOffset, randomVelocity);
+	public static void playParticleWithRandomOffsetAndVelocity(ServerWorld world, Vec3d position, ParticleEffect particleEffect, int amount, Vec3d randomOffset, Vec3d randomVelocity) {
+		playParticleWithRandomOffsetAndVelocity(world, position, Registry.PARTICLE_TYPE.getId(particleEffect.getType()), amount, randomOffset, randomVelocity);
 	}
 
 	/**
@@ -384,6 +421,28 @@ public class SpectrumS2CPackets {
 			ServerPlayNetworking.send(player, SpectrumS2CPackets.INITIATE_ITEM_TRANSFER, buf);
 		}
 	}
+	
+	public static void playTransphereParticle(ServerWorld world, @NotNull Transphere transphere) {
+		BlockPos blockPos = transphere.getOrigin();
+		
+		PacketByteBuf buf = PacketByteBufs.create();
+		Transphere.writeToBuf(buf, transphere);
+		
+		for (ServerPlayerEntity player : PlayerLookup.tracking(world, blockPos)) {
+			ServerPlayNetworking.send(player, SpectrumS2CPackets.INITIATE_TRANSPHERE, buf);
+		}
+	}
+
+	public static void sendExperienceOrbTransferPacket(ServerWorld world, @NotNull ExperienceTransfer experienceTransfer) {
+		BlockPos blockPos = experienceTransfer.getOrigin();
+
+		PacketByteBuf buf = PacketByteBufs.create();
+		ExperienceTransfer.writeToBuf(buf, experienceTransfer);
+
+		for (ServerPlayerEntity player : PlayerLookup.tracking(world, blockPos)) {
+			ServerPlayNetworking.send(player, SpectrumS2CPackets.INITIATE_EXPERIENCE_TRANSFER, buf);
+		}
+	}
 
 	public static void sendWirelessRedstonePacket(ServerWorld world, WirelessRedstoneTransmission wirelessRedstoneTransmission) {
 		BlockPos blockPos = wirelessRedstoneTransmission.getOrigin();
@@ -396,6 +455,7 @@ public class SpectrumS2CPackets {
 		}
 	}
 
+	// TODO: merge with sendPlayExperienceOrbEntityAbsorbedParticle
 	public static void sendPlayItemEntityAbsorbedParticle(World world, @NotNull ItemEntity itemEntity) {
 		PacketByteBuf buf = PacketByteBufs.create();
 		buf.writeDouble(itemEntity.getPos().x);
@@ -405,6 +465,18 @@ public class SpectrumS2CPackets {
 		// Iterate over all players tracking a position in the world and send the packet to each player
 		for (ServerPlayerEntity player : PlayerLookup.tracking((ServerWorld) world, itemEntity.getBlockPos())) {
 			ServerPlayNetworking.send(player, SpectrumS2CPackets.PLAY_ITEM_ENTITY_ABSORBED_PARTICLE_EFFECT_PACKET_ID, buf);
+		}
+	}
+
+	public static void sendPlayExperienceOrbEntityAbsorbedParticle(World world, @NotNull ExperienceOrbEntity experienceOrbEntity) {
+		PacketByteBuf buf = PacketByteBufs.create();
+		buf.writeDouble(experienceOrbEntity.getPos().x);
+		buf.writeDouble(experienceOrbEntity.getPos().y);
+		buf.writeDouble(experienceOrbEntity.getPos().z);
+
+		// Iterate over all players tracking a position in the world and send the packet to each player
+		for (ServerPlayerEntity player : PlayerLookup.tracking((ServerWorld) world, experienceOrbEntity.getBlockPos())) {
+			ServerPlayNetworking.send(player, SpectrumS2CPackets.PLAY_EXPERIENCE_ORB_ENTITY_ABSORBED_PARTICLE_EFFECT_PACKET_ID, buf);
 		}
 	}
 
@@ -443,5 +515,5 @@ public class SpectrumS2CPackets {
 			ServerPlayNetworking.send(player, SpectrumS2CPackets.PLAY_PEDESTAL_UPGRADED_PARTICLE_PACKET_ID, buf);
 		}
 	}
-	
+
 }
